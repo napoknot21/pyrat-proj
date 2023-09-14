@@ -1,13 +1,16 @@
 #!/bin/sh
 
+# Create a virtual environment in a subdirectory named venv
 python3 -m venv .
 
+# Activate the virtual environment
 source ./bin/activate
 
-sed -i "s/false/true/g" pyvenv.cfg
+# Modify the pyvenv.cfg file
+sed -i "s/false/true/g" ./pyvenv.cfg
 
-export PATH=$PATH:$PWD/bin/
+# Install the PyRat package
+pip install ./extras/PyRat
 
-python3 -m pip install --user ./extras/PyRat
-
-./bin/python3 -c "import pyrat; pyrat.PyRat.setup_workspace()" 2> /dev/null
+# Run the setup_workspace function from the pyrat module
+python -c "import pyrat; pyrat.PyRat.setup_workspace()" 2> /dev/null
