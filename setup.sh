@@ -10,4 +10,4 @@ export PATH=$PATH:$PWD/bin/
 
 python3 -m pip install --user ./extras/PyRat
 
-./bin/python3 -c "import pyrat; pyrat.PyRat.setup_workspace()"
+./bin/python3 -c "import pyrat; pyrat.PyRat.setup_workspace()" 2> /dev/null
