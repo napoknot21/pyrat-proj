@@ -1,5 +1,8 @@
 # PyRat Project
 
+Course of algorithmics and graph theory, structured around a maze game, in which you program a character (a rat or a python) to go grab pieces of cheese faster than an opponent. This course is intended for the 1st year students of IMT Atlantique.
+
+
 ## Prerequisites
 Ensure you have ```git``` and the lastest version of ```Python3```. If you haven't, you can download git [here](https://git-scm.com/downloads).
 
@@ -8,11 +11,14 @@ Ensure you have ```git``` and the lastest version of ```Python3```. If you haven
 ## Installation
 
 First of all, open a terminal (yes, we need it)
+
     - **Windows**: Open `Git Bash` (yes, it's better than `cmd`)
+
     - **MAC**: Open `Terminal`
+    
     - **Linux**: Open `Terminal`
 
-Once done, you have to clone this repository ! (copy-paste this command)
+Once done, you have to clone this repository ! (copy-paste this command on the terminal)
 ```
 git clone https://github.com/napoknot21/pyrat-project.git
 ```
