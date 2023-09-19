@@ -22,9 +22,11 @@ from pyrat import *
 
 # External imports 
 # [TODO] Put all your standard imports (numpy, random, os, heapq...) here
+import random
 
 # Previously developed functions
 # [TODO] Put imports of functions you have developed in previous lessons here
+from tutorial import get_neighbors, locations_to_action 
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -79,7 +81,7 @@ def traversal ( source              :   int,
             routing_table[vertex] = parent
             
             # Loop over the neighbors of the current vertex
-            for neighbor in graph.get_neighbors(vertex, graphs) :
+            for neighbor in get_neighbors(vertex, graph) :
                 if neighbor not in visited_vertices:
                     push_to_structure(queue_structure, (neighbor, distance + 1, vertex))
 
@@ -198,7 +200,13 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     """
 
     # [TODO] Write your preprocessing code here
-    pass
+    # Use BFS to compute shortest path from player's starting position to every other position
+    start_location = player_locations[name]
+    distances, routing_table = bfs(start_location, maze)
+    
+    # Store distances and routing_table in memory to be used in the turn function
+    memory.distances = distances
+    memory.routing_table = routing_table
     
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
@@ -238,8 +246,29 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
     """
 
     # [TODO] Write your turn code here and do not forget to return a possible action
-    action = possible_actions[0]
-    return action
+    # action = possible_actions[0]
+    # return action
+    # Current location of the player
+    current_location = player_locations[name]
+
+    # Find the nearest cheese
+    nearest_cheese_distance = float('inf')
+    nearest_cheese_location = None
+    for cheese_location in cheese:
+        if memory.distances[cheese_location] < nearest_cheese_distance:
+            nearest_cheese_distance = memory.distances[cheese_location]
+            nearest_cheese_location = cheese_location
+
+    # If no cheese is reachable, return a random move
+    if nearest_cheese_location is None:
+        return random.choice(possible_actions)
+
+    # Use the routing table to find the next move towards the nearest cheese
+    path_to_cheese = find_route(memory.routing_table, current_location, nearest_cheese_location)
+    actions_to_cheese = locations_to_actions(path_to_cheese, maze_width)
+    
+    # Take the first action from the list of actions
+    return actions_to_cheese[0]
 
 #####################################################################################################################################################
 ######################################################## EXECUTED ONCE AT THE END OF THE GAME #######################################################

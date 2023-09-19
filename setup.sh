@@ -4,7 +4,7 @@
 python3 -m venv .
 
 # Activate the virtual environment
-source ./bin/activate
+# source ./bin/activate
 
 # Modify the pyvenv.cfg file
 sed -i "s/false/true/g" ./pyvenv.cfg
