@@ -21,11 +21,9 @@
 from pyrat import *
 
 # External imports 
-# [TODO] Put all your standard imports (numpy, random, os, heapq...) here
 import random
 
 # Previously developed functions
-# [TODO] Put imports of functions you have developed in previous lessons here
 from tutorial import get_neighbors, locations_to_action 
 
 #####################################################################################################################################################
@@ -38,7 +36,6 @@ from tutorial import get_neighbors, locations_to_action
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
-# [TODO] It is good practice to keep all developed functions in an easily identifiable section
 def traversal ( source              :   int,
                 graph               :   Union[numpy.ndarray, Dict[int, Dict[int, int]]],
                 create_structure    :   Callable[[], Any],
@@ -116,7 +113,6 @@ def bfs ( source    : int,
     
     distances_to_explored_vertices, routing_table = traversal(source, graph, _create_structure, _push_to_structure, _pop_from_structure)
     return distances_to_explored_vertices, routing_table
-
 
 
 def find_route(routing_table: Dict[int, Union[None, int]],
@@ -254,13 +250,17 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
     # Find the nearest cheese
     nearest_cheese_distance = float('inf')
     nearest_cheese_location = None
+
     for cheese_location in cheese:
+
         if memory.distances[cheese_location] < nearest_cheese_distance:
+        
             nearest_cheese_distance = memory.distances[cheese_location]
             nearest_cheese_location = cheese_location
 
     # If no cheese is reachable, return a random move
     if nearest_cheese_location is None:
+        
         return random.choice(possible_actions)
 
     # Use the routing table to find the next move towards the nearest cheese
