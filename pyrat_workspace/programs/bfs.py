@@ -77,10 +77,10 @@ def traversal ( source              :   int,
             distances_to_explored_vertices[vertex] = distance
             routing_table[vertex] = parent
             
-            # Loop over the neighbors of the current vertex
-            for neighbor in get_neighbors(vertex, graph) :
-                if neighbor not in visited_vertices:
-                    push_to_structure(queue_structure, (neighbor, distance + 1, vertex))
+        # Loop over the neighbors of the current vertex
+        for neighbor in get_neighbors(vertex, graph) :
+            if neighbor not in visited_vertices:
+                push_to_structure(queue_structure, (neighbor, distance + 1, vertex))
 
     return distances_to_explored_vertices, routing_table
 
@@ -307,7 +307,6 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
             * None.
     """
 
-    # [TODO] Write your postprocessing code here
     pass
     
 #####################################################################################################################################################

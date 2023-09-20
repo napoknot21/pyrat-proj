@@ -157,8 +157,10 @@ def locations_to_actions ( locations:  List[int],
     # We iteratively transforms pairs of locations in the corresponding action
     actions = []
     for i in range(len(locations) - 1):
+        
         action = locations_to_action(locations[i], locations[i + 1], maze_width)
         actions.append(action)
+    
     return actions
 
 #####################################################################################################################################################
@@ -241,9 +243,6 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
             * action: One of the possible actions, as given in possible_actions.
     """
 
-    # [TODO] Write your turn code here and do not forget to return a possible action
-    # action = possible_actions[0]
-    # return action
     # Current location of the player
     current_location = player_locations[name]
 
