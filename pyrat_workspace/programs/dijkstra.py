@@ -56,33 +56,33 @@ def traversal ( source              :   int,
             * distances_to_explored_vertices: Dictionary where keys are explored vertices and associated values are the lengths of the paths to reach them.
             * routing_table:                  Routing table to allow reconstructing the paths obtained by the traversal.
     """
-    visited_vertices = []
+    visited_vertices = set()  # for O(1) lookups
     queue_structure = create_structure()
-
     routing_table = {source: None}
     distances_to_explored_vertices = {source: 0}
+    
+    push_to_structure(queue_structure, (0, source, None))  # push (distance, vertex, parent)
 
-    # Create the FIFO queue using the provided function
-    push_to_structure(queue_structure, (source, 0, None))  # push (vertex, distance, parent)
+    while queue_structure:
 
-    while queue_structure :
+        distance, vertex, parent = pop_from_structure(queue_structure)
 
-        # Pop the current vertex from the queue
-        vertex, distance, parent = pop_from_structure(queue_structure)
+        # Check if we've visited this vertex before
+        if vertex in visited_vertices:
+            continue  # Skip this iteration
         
-        # If the vertex has not been visited
-        if vertex not in visited_vertices:
+        # Mark the vertex as visited
+        visited_vertices.add(vertex)
 
-            visited_vertices.append(vertex)
-            distances_to_explored_vertices[vertex] = distance
-            routing_table[vertex] = parent
-            
-            # Loop over the neighbors of the current vertex
-            for neighbor in get_neighbors(vertex, graph):
-                if neighbor not in visited_vertices:
-                    # Assume that the graph itself has been pre-processed to include the mud as a weight
-                    new_distance = distance + 1  # TODO: Replace 1 with the weight if available in your graph
-                    push_to_structure(queue_structure, (new_distance, neighbor, vertex))
+        # Update distances and routing table
+        distances_to_explored_vertices[vertex] = distance
+        routing_table[vertex] = parent
+
+        # Loop over the neighbors of the current vertex
+        for neighbor in get_neighbors(vertex, graph):
+            if neighbor not in visited_vertices:
+                new_distance = distance + 1  # TODO: Replace 1 with the weight if your graph has weights
+                push_to_structure(queue_structure, (new_distance, neighbor, vertex))
 
     return distances_to_explored_vertices, routing_table
 
@@ -201,7 +201,7 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     # Use BFS to compute shortest path from player's starting position to every other position
     weights = {}
     start_location = player_locations[name]
-    distances, routing_table = dijkstra(start_location, maze, weights)
+    distances, routing_table = dijkstra(start_location, maze)
     
     # Store distances and routing_table in memory to be used in the turn function
     memory.distances = distances
@@ -322,7 +322,7 @@ if __name__ == "__main__":
     # Customize the game elements
     config = {"maze_width": 15,
               "maze_height": 11,
-              "mud_percentage": 00.0,
+              "mud_percentage": 40.0,
               "nb_cheese": 1,
               "trace_length": 1000}
     # Start the game
