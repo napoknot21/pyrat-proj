@@ -81,7 +81,7 @@ def traversal ( source              :   int,
         # Loop over the neighbors of the current vertex
         for neighbor in get_neighbors(vertex, graph):
             if neighbor not in visited_vertices:
-                new_distance = distance + 1  # TODO: Replace 1 with the weight if your graph has weights
+                new_distance = distance + graph[vertex][neighbor]  # TODO: Replace 1 with the weight if your graph has weights
                 push_to_structure(queue_structure, (new_distance, neighbor, vertex))
 
     return distances_to_explored_vertices, routing_table
