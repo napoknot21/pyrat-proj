@@ -24,7 +24,7 @@ from pyrat import *
 import random, heapq
 
 # Previously developed functions
-from tutorial import get_neighbors, locations_to_action 
+from tutorial import get_neighbors, locations_to_action
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -40,7 +40,7 @@ def traversal ( source              :   int,
                 graph               :   Union[numpy.ndarray, Dict[int, Dict[int, int]]],
                 create_structure    :   Callable[[], Any],
                 push_to_structure   :   Callable[[Any, Tuple[int, int, int]], None],
-                pop_from_structure  :   Callable[[Any], Tuple[int, int, int]]
+                pop_from_structure  :   Callable[[Any], Tuple[int, int, int]],
               ) -> Tuple[Dict[int, int], Dict[int, Union[None, int]]]:
     """
         Traversal function that explores a graph from a given vertex.
@@ -77,22 +77,25 @@ def traversal ( source              :   int,
             distances_to_explored_vertices[vertex] = distance
             routing_table[vertex] = parent
             
-        # Loop over the neighbors of the current vertex
-        for neighbor in get_neighbors(vertex, graph) :
-            if neighbor not in visited_vertices:
-                push_to_structure(queue_structure, (neighbor, distance + 1, vertex))
+            # Loop over the neighbors of the current vertex
+            for neighbor in get_neighbors(vertex, graph):
+                if neighbor not in visited_vertices:
+                    # Assume that the graph itself has been pre-processed to include the mud as a weight
+                    new_distance = distance + 1  # TODO: Replace 1 with the weight if available in your graph
+                    push_to_structure(queue_structure, (new_distance, neighbor, vertex))
 
     return distances_to_explored_vertices, routing_table
 
 
 def dijkstra ( source: int,
-               graph:  Union[numpy.ndarray, Dict[int, Dict[int, int]]]
+               graph:  Union[numpy.ndarray, Dict[int, Dict[int, int]]],
              ) ->      Tuple[Dict[int, int], Dict[int, Union[None, int]]]:
     """
         Dijkstra's algorithm is a particular traversal where vertices are explored in an order that is proportional to the distance to the source vertex.
         In:
             * source: Vertex from which to start the traversal.
             * graph:  Graph on which to perform the traversal.
+            * weights: A dictionary for hadling witgths between two vertex
         Out:
             * distances_to_explored_vertices: Dictionary where keys are explored vertices and associated values are the lengths of the paths to reach them.
             * routing_table:                  Routing table to allow reconstructing the paths obtained by the traversal.
@@ -100,13 +103,15 @@ def dijkstra ( source: int,
     
     # Function to create an empty priority queue
     def _create_structure ():
-        # TODO: Fill here
+        return []
+
     # Function to add an element to the priority queue
     def _push_to_structure (structure, element):
-        # TODO: Fill here
+        heapq.heappush(structure, element)
+    
     # Function to extract an element from the priority queue
     def _pop_from_structure (structure):
-        # TODO: Fill here
+        return heapq.heappop(structure)
     
     # Perform the traversal
     distances_to_explored_vertices, routing_table = traversal(source, graph, _create_structure, _push_to_structure, _pop_from_structure)
@@ -193,10 +198,10 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
             * None.
     """
 
-    # [TODO] Write your preprocessing code here
     # Use BFS to compute shortest path from player's starting position to every other position
+    weights = {}
     start_location = player_locations[name]
-    distances, routing_table = bfs(start_location, maze)
+    distances, routing_table = dijkstra(start_location, maze, weights)
     
     # Store distances and routing_table in memory to be used in the turn function
     memory.distances = distances
@@ -317,7 +322,7 @@ if __name__ == "__main__":
     # Customize the game elements
     config = {"maze_width": 15,
               "maze_height": 11,
-              "mud_percentage": 40.0,
+              "mud_percentage": 00.0,
               "nb_cheese": 1,
               "trace_length": 1000}
     # Start the game
