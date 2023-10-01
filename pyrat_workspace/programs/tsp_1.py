@@ -49,7 +49,7 @@ def graph_to_metagraph ( graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]]
             * complete_graph: Complete graph of the vertices of interest.
             * routing_tables: Dictionary of routing tables obtained by traversals used to build the complete graph.
     """
-    length = len(vertices)
+    n = len(vertices)
 
     # Initialize with zeros the new complete graph
     complete_graph = numpy.zeros((n,n), dtype=int)
@@ -73,6 +73,47 @@ def graph_to_metagraph ( graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]]
                 complete_graph[i][j] = distances[vertex_2]
 
     return complete_graph, routing_tables
+
+#####################################################################################################################################################
+
+def dfs_recursive ( source: int,
+                    graph:  Union[numpy.ndarray, Dict[int, Dict[int, int]]]
+                  ) ->      Tuple[Dict[int, int], Dict[int, Union[None, int]]]:
+    """
+        This is a recursive implementation of the DFS.
+        At each call, we check if we are done with the traversal, and then we explore unexplored neighbors.
+        This implementation stops when the spanning tree is done, i.e. when all vertices have been explored once.
+        In:
+            * source: Vertex from which to start the traversal.
+            * graph:  Graph on which to perform the traversal.
+        Out:
+            * distances_to_explored_vertices: Dictionary where keys are explored vertices and associated values are the lengths of the paths to reach them.
+            * routing_table:                  Routing table to allow reconstructing the paths obtained by the traversal.
+    """
+    
+    # We will fill these variables during the traversal
+    routing_table = {source: None}
+    distances_to_explored_vertices = {source: 0}
+    
+    # Internal implementation of the recursive DFS
+    def _dfs_recursive (current_vertex, parent_vertex, current_length):
+        # Visit the vertex
+        print("Visiting", current_vertex, "at distance", current_length, "from start along the explored path")
+        routing_table[current_vertex] = parent_vertex
+        distances_to_explored_vertices[current_vertex] = current_length
+        # We stop when all vertices are visited
+        if len(distances_to_explored_vertices) == len(graph) :
+            print("Spanning tree done, all vertices have been explored once using DFS")
+            return
+        
+        # If there are still vertices to visit, we explore unexplored neighbors
+        for neighbor in graph[current_vertex] :
+            if neighbor not in distances_to_explored_vertices :
+                _dfs_recursive(neighbor, current_vertex, current_length + graph[current_vertex][neighbor])
+    
+    # Perform the traversal
+    _dfs_recursive(source, None, 0)
+    return distances_to_explored_vertices, routing_table
 
 
 #####################################################################################################################################################
@@ -196,6 +237,7 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
 #################################################################################################################
 ###################################################### GO ! #####################################################
 #################################################################################################################
+
 if __name__ == "__main__":
     # Map the functions to the character
     players = [{"name": "TSP 1", "preprocessing_function": preprocessing, "turn_function": turn}]
@@ -210,5 +252,6 @@ if __name__ == "__main__":
     stats = game.start()
     # Show statistics
     print(stats)
+
 #################################################################################################################
 #################################################################################################################
