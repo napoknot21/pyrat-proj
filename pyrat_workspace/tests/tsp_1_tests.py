@@ -43,7 +43,7 @@ import os
 
 # Previously developed functions
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "programs"))
-from tutorial import *
+from tsp_1 import *
 
 #####################################################################################################################################################
 ############################################################### UNIT TESTS DEFINITION ###############################################################
@@ -189,91 +189,7 @@ class TestsTutorial (unittest.TestCase):
         
         # Check if the function’s output matches expected output
         self.assertEqual(result_expanded_route, expected_expanded_route)
-        
 
-    #############################################################################################################################################
-
-    def test_get_neighbors ( self: Self
-                           ) ->    None:
-
-        """
-            This function tests the function "get_neighbors" of the file "tutorial.py".
-            It checks that the function returns the correct list of neighbors for both graph structures.
-            In:
-                * self: Reference to the current object.
-            Out:
-                * None.
-        """
-
-        # We test the function for both graph structures
-        for graph in [self.graph_dictionary, self.graph_matrix]:
-
-            # We check that the function returns the correct list of neighbors for standard cases
-            self.assertEqual(get_neighbors(9, graph), [8])
-            self.assertEqual(get_neighbors(2, graph), [3, 7])
-            self.assertEqual(get_neighbors(8, graph), [7, 9, 13])
-            self.assertEqual(get_neighbors(16, graph), [11, 15, 17, 21])
-
-            # The function should raise an exception if the vertex is not in the graph
-            self.assertRaises(Exception, get_neighbors, 25, graph)
-        
-        # Note the different behavior between structures when not using the function correctly (cf. comments regarding assertions in function definition)
-        self.assertRaises(Exception, get_neighbors, 1, self.graph_dictionary)
-        self.assertEqual(get_neighbors(1, self.graph_matrix), [])
-
-    #############################################################################################################################################
-
-    def test_get_weight ( self: Self
-                        ) ->    None:
-
-        """
-            This function tests the function "get_weight" of the file "tutorial.py".
-            It checks that the function returns the correct weight for both graph structures.
-            In:
-                * self: Reference to the current object.
-            Out:
-                * None.
-        """
-
-        # We test the function for both graph structures
-        for graph in [self.graph_dictionary, self.graph_matrix]:
-
-            # We check that the function returns the correct weight for standard cases
-            self.assertEqual(get_weight(9, 8, graph), 9)
-            self.assertEqual(get_weight(17, 22, graph), 1)
-
-            # The function should raise an exception if the vertex is not in the graph
-            self.assertRaises(Exception, get_weight, 24, 25, graph)
-        
-        # Note the different behavior between structures when not using the function correctly (cf. comments regarding assertions in function definition)
-        self.assertRaises(Exception, get_weight, 0, 0, self.graph_dictionary)
-        self.assertRaises(Exception, get_weight, 0, 1, self.graph_dictionary)
-        self.assertEqual(get_weight(0, 0, self.graph_matrix), 0)
-        self.assertEqual(get_weight(0, 1, self.graph_matrix), 0)
-
-    #############################################################################################################################################
-
-    def test_locations_to_action ( self: Self
-                                 ) ->    None:
-
-        """
-            This function tests the function "locations_to_action" of the file "tutorial.py".
-            It checks that the function returns the correct action.
-            In:
-                * self: Reference to the current object.
-            Out:
-                * None.
-        """
-
-        # We check that the function returns the correct action for standard cases
-        self.assertEqual(locations_to_action(16, 11, self.maze_width), "north")
-        self.assertEqual(locations_to_action(16, 15, self.maze_width), "west")
-        self.assertEqual(locations_to_action(16, 17, self.maze_width), "east")
-        self.assertEqual(locations_to_action(16, 21, self.maze_width), "south")
-        self.assertEqual(locations_to_action(16, 16, self.maze_width), "nothing")
-
-        # The function should raise an exception if the locations are not adjacent
-        self.assertRaises(Exception, locations_to_action, 16, 20, self.maze_width)
 
 #####################################################################################################################################################
 ######################################################################## GO! ########################################################################
