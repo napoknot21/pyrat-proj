@@ -73,6 +73,7 @@ def graph_to_metagraph ( graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]]
                 complete_graph[i][j] = distances[vertex_2]
 
     return complete_graph, routing_tables
+    
 
 #####################################################################################################################################################
 
@@ -163,6 +164,7 @@ def tsp ( complete_graph: numpy.ndarray,
     
     return best_route, best_length
 
+
 #####################################################################################################################################################
 
 def expand_route (  route_in_complete_graph: List[int], 
@@ -180,43 +182,29 @@ def expand_route (  route_in_complete_graph: List[int],
     Returns:
         route: Route in the original graph corresponding to the given one.
     """
-    """
-    route = []
     
+    route = []
+
     for i in range(len(route_in_complete_graph) - 1):
+        
         source = route_in_complete_graph[i]
         target = route_in_complete_graph[i + 1]
 
-        # Check if source or target are arrays and print them for debugging
-        if isinstance(source, (list, numpy.ndarray)) or isinstance(target, (list, numpy.ndarray)):
-            print(f"Source: {source}, Target: {target}")
-
-        # Use the routing table to find the path between source and target in the original graph
         current_vertex = source
-        while current_vertex != target:
-            next_vertex = routing_tables[current_vertex][target]
+        
+        while numpy.array(current_vertex).any() != numpy.array(target).any():  # example if both are arrays
+            
+            next_vertex = routing_tables[current_vertex].get(target)
+            
+            if next_vertex is None:
+                print(f"Error: target {target} not found in routing_tables[{current_vertex}]")
+                return []  # You may handle this error differently
+            
             route.append(cell_names[current_vertex])
             current_vertex = next_vertex
 
-    # Add the last cell to the route
-    #route.append(cell_names[route_in_complete_graph[-1]])
-    
     return route
-    """
-    route = []
 
-    for sub_route in route_in_complete_graph:
-        for i in range(len(sub_route) - 1):
-            source = sub_route[i]
-            target = sub_route[i + 1]
-
-            current_vertex = source
-            while current_vertex != target:
-                next_vertex = routing_tables[current_vertex][target]
-                route.append(cell_names[current_vertex])
-                current_vertex = next_vertex
-
-    return route
 
     
 #####################################################################################################################################################

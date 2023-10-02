@@ -3,7 +3,7 @@
 #####################################################################################################################################################
 
 """
-    This program contains all the unit tests for the functions developed in the program "tutorial.py".
+    This program contains all the unit tests for the functions developed in the program "tsp_1.py".
     Let's consider the following maze for our tests:
     #############################################################
     # (0)       # (1)      # (2)       ⵗ (3)       # (4)        #
