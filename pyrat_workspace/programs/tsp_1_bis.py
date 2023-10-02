@@ -141,9 +141,7 @@ def expand_route ( route_in_complete_graph: List[int],
     # Iterate over the input route in the complete graph. For each pair of consecutive vertices in the route,
     # retrieve the corresponding sub-route in the original graph and append it to the expanded route.
     for i in range(len(route_in_complete_graph) - 1):
-        # 'find_route' function is expected to retrieve the sub-route in the original graph between two given vertices.
-        # 'routing_tables[route_in_complete_graph[i]]' provides the routing table for the current vertex in the complete graph.
-        # 'route_in_complete_graph[i]' and 'route_in_complete_graph[i + 1]' are the start and end vertices for the sub-route.
+
         # Append the found sub-route to the expanded route.
         route += find_route(routing_tables[route_in_complete_graph[i]], route_in_complete_graph[i], route_in_complete_graph[i + 1])
     
@@ -198,7 +196,6 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     # We turn this route into actions and store them in the memory
     memory.actions = locations_to_actions(route, maze_width)
     
-    pass
     
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
