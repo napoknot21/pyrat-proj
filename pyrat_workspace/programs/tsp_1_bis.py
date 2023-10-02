@@ -61,8 +61,11 @@ def graph_to_metagraph(graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]],
             if cheese != vertex1:
             
                 if vertex1 not in complete_graph:
+
                     complete_graph[vertex1] = {cheese: distances[cheese]}
+                
                 else:
+                    
                     complete_graph[vertex1][cheese] = distances[cheese]
 
     return complete_graph, routing_tables
@@ -81,27 +84,41 @@ def tsp ( complete_graph: Dict[int, Dict[int, Union[None, int]]],
         In:
             * complete_graph: Complete graph of the vertices of interest.
             * source:         Vertex used to start the search.
+            * length: The initial length value (should be passed as 0).
+            * route: The initial route list (should be passed with the source vertex).
+            * memory: A thread-local storage to keep track of the best route and its length.
         Out:
             * best_route:  Best route found in the search.
             * best_length: Length of the best route found.
     """
     memory.best_route = []  # Initialize best route found.
-    memory.best_length = 10e9  # Initialize length of best route with a large number.
+    memory.best_length = float('inf')  # Initialize length of best route with a large number.
 
-    def _tsp(graph, vertex, length, route):
+    def brute_force(graph, vertex, length, route):
+        """
+        Recursive helper function to explore all possible routes.
+
+        Args:
+            * graph (dict): The complete graph.
+            * vertex (int): The current vertex.
+            * length (int): The length of the route so far.
+            * route (list): The route taken so far.
+        """
         # Base case: if all vertices are visited, update best route and length.
         if len(route) == len(graph):
+            
             if length < memory.best_length:
                 memory.best_route = route
                 memory.best_length = length
             return
+        
         # Recursive case: explore unvisited neighbors.
         for neighbor in graph[vertex]:
             if neighbor not in route:
-                _tsp(graph, neighbor, length + graph[vertex][neighbor], route + [neighbor])
+                brute_force(graph, neighbor, length + graph[vertex][neighbor], route + [neighbor])
 
     # Start the recursive TSP search from source.
-    _tsp(complete_graph, source, 0, [source])
+    brute_force(complete_graph, source, 0, [source])
     return memory.best_route, memory.best_length
 
 #####################################################################################################################################################
@@ -118,10 +135,19 @@ def expand_route ( route_in_complete_graph: List[int],
         Out:
             * route: Route in the original graph corresponding to the given one.
     """
+    # Initialize an empty list to store the expanded route in the original graph.
     route = []
-    # For each vertex pair in route, find corresponding sub-route in original graph.
+
+    # Iterate over the input route in the complete graph. For each pair of consecutive vertices in the route,
+    # retrieve the corresponding sub-route in the original graph and append it to the expanded route.
     for i in range(len(route_in_complete_graph) - 1):
+        # 'find_route' function is expected to retrieve the sub-route in the original graph between two given vertices.
+        # 'routing_tables[route_in_complete_graph[i]]' provides the routing table for the current vertex in the complete graph.
+        # 'route_in_complete_graph[i]' and 'route_in_complete_graph[i + 1]' are the start and end vertices for the sub-route.
+        # Append the found sub-route to the expanded route.
         route += find_route(routing_tables[route_in_complete_graph[i]], route_in_complete_graph[i], route_in_complete_graph[i + 1])
+    
+    # Return the expanded route in the original graph.
     return route
         
 #####################################################################################################################################################
