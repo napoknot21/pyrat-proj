@@ -35,7 +35,9 @@ from dijkstra import *
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
-def graph_to_metagraph(graph, vertices):
+def graph_to_metagraph(graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]],
+                         vertices: List[int]
+                        ) -> Tuple[numpy.ndarray, Dict[int, Union[None, int]]] :
     """
     Function to create a complete graph from given graph vertices.
 
@@ -49,17 +51,19 @@ def graph_to_metagraph(graph, vertices):
     complete_graph = {}  # Dictionary to store the complete graph.
     routing_tables = {}  # Dictionary to store routing tables for each vertex.
 
-    for vertice in vertices:
+    for vertex1 in vertices:
         # Apply Dijkstra's algorithm to each vertex to find shortest paths.
-        distances, routing_tables[vertice] = dijkstra(vertice, graph)
+        distances, routing_tables[vertex1] = dijkstra(vertex1, graph)
 
         # Populate the complete graph with distances to other vertices.
         for cheese in vertices:
-            if cheese != vertice:
-                if vertice not in complete_graph:
-                    complete_graph[vertice] = {cheese: distances[cheese]}
+
+            if cheese != vertex1:
+            
+                if vertex1 not in complete_graph:
+                    complete_graph[vertex1] = {cheese: distances[cheese]}
                 else:
-                    complete_graph[vertice][cheese] = distances[cheese]
+                    complete_graph[vertex1][cheese] = distances[cheese]
 
     return complete_graph, routing_tables
 

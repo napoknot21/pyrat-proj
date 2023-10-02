@@ -67,7 +67,7 @@ def graph_to_metagraph ( graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]]
 
         for j, vertex_2 in enumerate(vertices) :
 
-            if vertex_1 != vertex_2 :
+            if vertex_2 != vertex_1  :
 
                 # Fill the complete graph with the distances from vertex_1 to vertex_2
                 complete_graph[i][j] = distances[vertex_2]
@@ -288,8 +288,8 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
 
     if cheese:  # Check if there is still cheese left
     
-        source_index = memory.cell_names.index(player_locations[name])
-        tsp_cheese = tsp(memory.complete_graph, source_index)
+        #source_index = memory.cell_names.index(player_locations[name])
+        tsp_cheese = tsp(memory.complete_graph, player_locations[name])
         path_to_cheese = expand_route(tsp_cheese, memory.routing_tables, memory.cell_names)
         actions_to_cheese = locations_to_actions(path_to_cheese, maze_width)
         
