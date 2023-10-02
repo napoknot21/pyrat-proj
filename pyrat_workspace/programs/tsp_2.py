@@ -70,6 +70,7 @@ def graph_to_metagraph ( graph:    Union[numpy.ndarray, Dict[int, Dict[int, int]
 
     return complete_graph, routing_tables
 
+#####################################################################################################################################################
 
 def tsp ( complete_graph: Dict[int, Dict[int, Union[None, int]]],
           source:         int,
@@ -83,38 +84,46 @@ def tsp ( complete_graph: Dict[int, Dict[int, Union[None, int]]],
         In:
             * complete_graph: Complete graph of the vertices of interest.
             * source:         Vertex used to start the search.
+            * length:         The initial length value (should be passed as 0).
+            * route:          The initial route list (should be passed with the source vertex).
+            * memory:         A thread-local storage to keep track of the best route and its length.
         Out:
             * best_route:  Best route found in the search.
             * best_length: Length of the best route found.
     """
+
     memory.best_route = []
-    memory.best_length = 10e9
+    memory.best_length = float('inf')
     
-    def _tsp(complete_graph, current_vertex, length_current_route, current_route):
+    # Internal implementation of the recursive tsp
+    def backtrack (complete_graph, current_vertex, length_current_route, current_route):
         
         # We stop when all vertices are visited
-        if len(current_route) == len(complete_graph):
+        if len(current_route) == len(complete_graph) :
+
             if length_current_route < memory.best_length:
+            
                 memory.best_route = current_route
                 memory.best_length = length_current_route
+            
             return
         
         # We stop if the route is already longer than the shortest route
         if length_current_route >= memory.best_length:
             return
         
-        # Sort neighbors by distance
-        sorted_neighbors = sorted(complete_graph[current_vertex].items(), key=lambda x: x[1])
-
         # If there are still vertices to visit, we explore unexplored neighbors
-        for neighbor, distance in sorted_neighbors:
-            if neighbor not in current_route:
-                _tsp(complete_graph, neighbor, length_current_route + distance, current_route + [neighbor])
-    
+        for neighbor in complete_graph[current_vertex] :
+
+            if neighbor not in current_route :
+                
+                backtrack(complete_graph, neighbor, length_current_route + complete_graph[current_vertex][neighbor], current_route + [neighbor])
+               
     # Perform the traversal
-    _tsp(complete_graph, source, 0, [source])
+    backtrack(complete_graph, source, 0, [source])
     return memory.best_route, memory.best_length
-    
+
+#####################################################################################################################################################
 
 def expand_route ( route_in_complete_graph: List[int],
                    routing_tables:          Dict[int, Dict[int, Union[None, int]]],
@@ -174,10 +183,6 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     
     complete_graph, routing_tables = graph_to_metagraph(maze, [player_pos] + cheese)
     
-    # We sort the dictionaries associated to the keys of the dictionary by increasing weights
-    for elt in complete_graph:
-        complete_graph[elt] = {vertice: weight for vertice, weight in sorted(complete_graph[elt].items(), key=lambda x: x[1])}
-    
     best_route, best_length = tsp(complete_graph, player_pos, 0, [], threading.local())
 
     route = expand_route(best_route, routing_tables)
@@ -185,14 +190,7 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     memory.actions = locations_to_actions(route, maze_width)
     
     pass
-
-##dico = {1:{2:7,3:4,4:3},2:{1:7,3:8,4:2},3:{1:4,2:8,4:1},4:{1:3,2:2,3:1}}
-##
-##for key in dico:
-##    dico[key] = {vertice: weight for vertice, weight in sorted(dico[key].items(), key=lambda x: x[1])}
-##
-##print(dico)
-
+    
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
 #####################################################################################################################################################
@@ -280,7 +278,7 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
 if __name__ == "__main__":
     
     # Map the functions to the character
-    players = [{"name": "TSP 3", "preprocessing_function": preprocessing, "turn_function": turn}]
+    players = [{"name": "TSP 2", "preprocessing_function": preprocessing, "turn_function": turn}]
     
     # Customize the game elements
     config = {"maze_width": 15,

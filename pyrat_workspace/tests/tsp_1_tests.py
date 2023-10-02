@@ -131,26 +131,35 @@ class TestsTutorial (unittest.TestCase):
                                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
                                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
                                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]])
+
+        self.vertices = [0, 2, 5, 7]
         
     #############################################################################################################################################
     #                                                               PUBLIC METHODS                                                              #
     #############################################################################################################################################
 
     def test_graph_to_metagraph(self):
-        """
-        Unit test for the graph_to_metagraph function.
-        """
-        # Define test case inputs
-        example_graph = self.graph_dictionary  # or another example graph as needed
+        """Test the graph_to_metagraph function."""
+        complete_graph, routing_tables = graph_to_metagraph(self.graph_dictionary, self.vertices)
         
-        # Call the function with the test inputs
-        result_metagraph = graph_to_metagraph(example_graph)
+        # Here, you need to assert that the `complete_graph` and `routing_tables` are what you expect them to be
+        # for the given input.
+        expected_complete_graph = numpy.array([
+            [0, float('inf'), 1, float('inf')],
+            [float('inf'), 0, float('inf'), 1],
+            [1, float('inf'), 0, 2],
+            [float('inf'), 1, 2, 0]
+        ])  # This is a placeholder; you should replace it with the expected result.
+
+        expected_routing_tables = {
+            0: {2: None, 5: 5, 7: None},
+            2: {0: None, 5: 7, 7: 7},
+            5: {0: 0, 2: 7, 7: 6},
+            7: {0: None, 2: 2, 5: 6}
+        }  # This is a placeholder; replace with the expected routing table for each vertex.
         
-        # Define expected output
-        expected_metagraph = {}  # replace with expected metagraph
-        
-        # Check if the function’s output matches expected output
-        self.assertEqual(result_metagraph, expected_metagraph)
+        numpy.testing.assert_array_equal(complete_graph, expected_complete_graph)
+        self.assertEqual(routing_tables, expected_routing_tables)
 
     #############################################################################################################################################
 
