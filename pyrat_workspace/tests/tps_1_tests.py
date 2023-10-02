@@ -3,25 +3,25 @@
 #####################################################################################################################################################
 
 """
-    This program contains all the unit tests for the functions developed in the program "bfs.py".
+    This program contains all the unit tests for the functions developed in the program "tutorial.py".
     Let's consider the following maze for our tests:
     #############################################################
     # (0)       # (1)      # (2)       ⵗ (3)       # (4)        #
     #           #          #           ⵗ           #            #
     #           #          #           ⵗ           #            #
-    #⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅############⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅##########################
+    #⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅############⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅##########################
     # (5)       ⵗ (6)       ⵗ (7)       ⵘ (8)       ⵘ (9)       #
     #           ⵗ           ⵗ           6           9            #
     #           ⵗ           ⵗ           ⵘ           ⵘ           #
-    #⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#ⴾⴾⴾⴾⴾⴾ8ⴾⴾⴾⴾⴾⴾ############⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#############
+    #⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#ⴾⴾⴾⴾⴾⴾ8ⴾⴾⴾⴾⴾⴾ############⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#############
     # (10)      ⵗ (11)      # (12)      # (13)      # (14)      #
     #           ⵗ           #           #           #           #
     #           ⵗ           #           #           #           #
-    #ⴾⴾⴾⴾⴾⴾ9ⴾⴾⴾⴾⴾⴾ#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#############ⴾⴾⴾⴾⴾⴾ6ⴾⴾⴾⴾⴾⴾ#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#
+    #ⴾⴾⴾⴾⴾⴾ9ⴾⴾⴾⴾⴾⴾ#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#############ⴾⴾⴾⴾⴾⴾ6ⴾⴾⴾⴾⴾⴾ#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#
     # (15)      ⵘ (16)      ⵗ (17)      ⵘ (18)      ⵗ (19)      #
     #           4           ⵗ           5           ⵗ            #
     #           ⵘ           ⵗ           ⵘ           ⵗ           #
-    #⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#
+    #⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅#
     # (20)      # (21)      ⵗ (22)      # (23)      # (24)      #
     #           #           ⵗ           #           #           #
     #           #           ⵗ           #           #           #
@@ -43,7 +43,7 @@ import os
 
 # Previously developed functions
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "programs"))
-from bfs import *
+from tutorial import *
 
 #####################################################################################################################################################
 ############################################################### UNIT TESTS DEFINITION ###############################################################
@@ -136,85 +136,128 @@ class TestsTutorial (unittest.TestCase):
     #                                                               PUBLIC METHODS                                                              #
     #############################################################################################################################################
 
-    def test_bfs ( self : Self
-                 ) -> None :
-        
+    def test_graph_to_metagraph(self):
         """
-            Tests the "bfs" function from the "bfs.py" module. 
-            This test ensures that the "bfs" function correctly computes the distances from a source vertex to all other vertices in the graph.
-            The function is tested against both adjacency list (dictionary) and adjacency matrix representations of the graph.
+        Unit test for the graph_to_metagraph function.
+        """
+        # Define test case inputs
+        example_graph = self.graph_dictionary  # or another example graph as needed
+        
+        # Call the function with the test inputs
+        result_metagraph = graph_to_metagraph(example_graph)
+        
+        # Define expected output
+        expected_metagraph = {}  # replace with expected metagraph
+        
+        # Check if the function’s output matches expected output
+        self.assertEqual(result_metagraph, expected_metagraph)
 
-            Parameters:
-                * self: Reference to the current test case instance.
+    #############################################################################################################################################
 
-            Returns:
+    def test_tsp(self):
+        """
+        Unit test for the tsp function.
+        """
+        # Define test case inputs
+        example_metagraph = {}  # replace with example metagraph
+        
+        # Call the function with the test inputs
+        result_path = tsp(example_metagraph)
+        
+        # Define expected output
+        expected_path = []  # replace with expected path
+        
+        # Check if the function’s output matches expected output
+        self.assertEqual(result_path, expected_path)
+
+    #############################################################################################################################################
+
+    def test_expand_route(self):
+        """
+        Unit test for the expand_route function.
+        """
+        # Define test case inputs
+        example_route = []  # replace with example route
+        example_routing_tables = {}  # replace with example routing tables
+        example_cell_names = {}  # replace with example cell names
+        
+        # Call the function with the test inputs
+        result_expanded_route = expand_route(example_route, example_routing_tables, example_cell_names)
+        
+        # Define expected output
+        expected_expanded_route = []  # replace with expected expanded route
+        
+        # Check if the function’s output matches expected output
+        self.assertEqual(result_expanded_route, expected_expanded_route)
+        
+
+    #############################################################################################################################################
+
+    def test_get_neighbors ( self: Self
+                           ) ->    None:
+
+        """
+            This function tests the function "get_neighbors" of the file "tutorial.py".
+            It checks that the function returns the correct list of neighbors for both graph structures.
+            In:
+                * self: Reference to the current object.
+            Out:
                 * None.
         """
 
-        for graph in [self.graph_dictionary, self.graph_matrix] :
-            
-            distances, routing_table = bfs(0, graph)
-        
-            # We check the distance from the source (vertex 0) to some other vertices
-            self.assertEqual(distances[7], 3)
-            self.assertEqual(distances[11], 3)
-            self.assertEqual(distances[24], 8)
-
-        # Testing with an invalid source vertex
-        self.assertRaises(Exception, bfs, -1, self.graph_dictionary) # Negative vertex
-        self.assertRaises(Exception, bfs, 1000, self.graph_dictionary) # Out of range vertex
-
-        # Testing with an invalid graph type
-        self.assertRaises(Exception, bfs, 0, [1, 2, 3])  # A list is not a valid graph representation
-
-    #############################################################################################################################################
-
-    def test_find_route(self):
-        """
-        Tests the "find_route" function to ensure it correctly computes a route from source to target using the provided routing table.
-
-        Parameters:
-            * self: Reference to the current test case instance.
-
-        Returns:
-            * None.
-        """
-
-        # We need a routing table to test the function, so let's get one using BFS
+        # We test the function for both graph structures
         for graph in [self.graph_dictionary, self.graph_matrix]:
-            distances, routing_table = bfs(0, graph) 
 
-            # Test with a valid route
-            route1 = find_route(routing_table, 0, 7)
-            # Ensure the route starts at the source and ends at the target
-            self.assertEqual(route1[0], 0) and self.assertEqual(route1[-1], 7)
-            # Ensure the entire route is ok
-            self.assertEqual(route1, [0, 5, 6, 7])
+            # We check that the function returns the correct list of neighbors for standard cases
+            self.assertEqual(get_neighbors(9, graph), [8])
+            self.assertEqual(get_neighbors(2, graph), [3, 7])
+            self.assertEqual(get_neighbors(8, graph), [7, 9, 13])
+            self.assertEqual(get_neighbors(16, graph), [11, 15, 17, 21])
 
-            route2 = find_route(routing_table, 0, 22)
-            # Ensure the route starts at the source and ends at the target
-            self.assertEqual(route2[0], 0) and self.assertEqual(route2[-1], 22)
-            # Ensure the entire route is ok
-            self.assertEqual(route2, [0, 5, 6, 11, 16, 17, 22])
-
-        # Test for an invalid route
-        # For this, we need to simulate a missing route in the routing table
-        # Assuming that there's no direct path from 0 to 99 in your test graph
-        # Modify the number 99 to a valid vertex in your graph but without a direct path from 0
-        incomplete_routing_table = routing_table.copy()
-        incomplete_routing_table[99] = None 
-
-        with self.assertRaises(ValueError):
-            find_route(incomplete_routing_table, 0, 99)
-
+            # The function should raise an exception if the vertex is not in the graph
+            self.assertRaises(Exception, get_neighbors, 25, graph)
+        
+        # Note the different behavior between structures when not using the function correctly (cf. comments regarding assertions in function definition)
+        self.assertRaises(Exception, get_neighbors, 1, self.graph_dictionary)
+        self.assertEqual(get_neighbors(1, self.graph_matrix), [])
 
     #############################################################################################################################################
 
-    def test_locations_to_actions  ( self  :  Self  
-                                   ) -> None :
-        
+    def test_get_weight ( self: Self
+                        ) ->    None:
+
         """
-            This function tests the function "locations_to_action" of the file "bfs.py".
+            This function tests the function "get_weight" of the file "tutorial.py".
+            It checks that the function returns the correct weight for both graph structures.
+            In:
+                * self: Reference to the current object.
+            Out:
+                * None.
+        """
+
+        # We test the function for both graph structures
+        for graph in [self.graph_dictionary, self.graph_matrix]:
+
+            # We check that the function returns the correct weight for standard cases
+            self.assertEqual(get_weight(9, 8, graph), 9)
+            self.assertEqual(get_weight(17, 22, graph), 1)
+
+            # The function should raise an exception if the vertex is not in the graph
+            self.assertRaises(Exception, get_weight, 24, 25, graph)
+        
+        # Note the different behavior between structures when not using the function correctly (cf. comments regarding assertions in function definition)
+        self.assertRaises(Exception, get_weight, 0, 0, self.graph_dictionary)
+        self.assertRaises(Exception, get_weight, 0, 1, self.graph_dictionary)
+        self.assertEqual(get_weight(0, 0, self.graph_matrix), 0)
+        self.assertEqual(get_weight(0, 1, self.graph_matrix), 0)
+
+    #############################################################################################################################################
+
+    def test_locations_to_action ( self: Self
+                                 ) ->    None:
+
+        """
+            This function tests the function "locations_to_action" of the file "tutorial.py".
             It checks that the function returns the correct action.
             In:
                 * self: Reference to the current object.
@@ -223,15 +266,14 @@ class TestsTutorial (unittest.TestCase):
         """
 
         # We check that the function returns the correct action for standard cases
-        self.assertEqual(locations_to_actions([16, 11], self.maze_width), ["north"])
-        self.assertEqual(locations_to_actions([16, 15], self.maze_width), ["west"])
-        self.assertEqual(locations_to_actions([16, 17], self.maze_width), ["east"])
-        self.assertEqual(locations_to_actions([16, 21], self.maze_width), ["south"])
-        self.assertEqual(locations_to_actions([16, 16], self.maze_width), ["nothing"])
+        self.assertEqual(locations_to_action(16, 11, self.maze_width), "north")
+        self.assertEqual(locations_to_action(16, 15, self.maze_width), "west")
+        self.assertEqual(locations_to_action(16, 17, self.maze_width), "east")
+        self.assertEqual(locations_to_action(16, 21, self.maze_width), "south")
+        self.assertEqual(locations_to_action(16, 16, self.maze_width), "nothing")
 
         # The function should raise an exception if the locations are not adjacent
-        self.assertRaises(Exception, locations_to_actions, [16, 20], self.maze_width)
-
+        self.assertRaises(Exception, locations_to_action, 16, 20, self.maze_width)
 
 #####################################################################################################################################################
 ######################################################################## GO! ########################################################################
@@ -244,4 +286,3 @@ if __name__ == "__main__":
 
 #####################################################################################################################################################
 #####################################################################################################################################################
-

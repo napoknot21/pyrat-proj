@@ -132,32 +132,35 @@ def tsp ( complete_graph: numpy.ndarray,
             * best_length: Length of the best route found.
     """
     n = len(complete_graph)
-    
+
     # Initialize variables to store the best route and its length
     best_route = []
     best_length = float('inf')
-    
-    # Define a recursive function for the brute-force search
-    def brute_force(remaining, vertex, path, weight):
 
-        nonlocal best_length, best_route
+    def backtrack(path: List[int], remaining: set, current_length: int) -> None:
+        nonlocal best_route, best_length
 
+        # If the path so far is longer than the best known, return (pruning step)
+        if current_length >= best_length:
+            return
+
+        # If all vertices are visited, check if it forms a shorter route
         if not remaining:
-            # If all vertices are visited, check if it forms a shorter route
-            if weight < best_length:
-
-                best_length = weight
+            if current_length < best_length:
                 best_route = path[:]
-        else:
+                best_length = current_length
+            return
 
-            for i in remaining:
-                new_remaining = remaining - set([i])
-                brute_force(new_remaining, i, path + [i], weight + complete_graph[vertex][i])
-    
-    # Start the brute-force search from the source vertex
-    initial_remaining = set(range(n)) - set([source])
-    brute_force(initial_remaining, source, [source], 0)
-    
+        # Explore vertices in remaining
+        for vertex in list(remaining):
+            new_length = current_length + complete_graph[path[-1]][vertex]
+            new_remaining = remaining - {vertex}
+            backtrack(path + [vertex], new_remaining, new_length)
+
+    # Start the backtracking search from the source vertex
+    initial_remaining = set(range(n)) - {source}
+    backtrack([source], initial_remaining, 0)
+
     # Add the source vertex to the end of the best route to complete the cycle
     best_route.append(source)
     

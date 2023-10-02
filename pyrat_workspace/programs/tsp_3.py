@@ -137,26 +137,29 @@ def tsp ( complete_graph: numpy.ndarray,
     best_route = []
     best_length = float('inf')
     
-    # Define a recursive function for the brute-force search
-    def brute_force(remaining, vertex, path, weight):
-
+    def backtrack(remaining: set, vertex: int, path: List[int], weight: int) -> None:
         nonlocal best_length, best_route
 
         if not remaining:
             # If all vertices are visited, check if it forms a shorter route
             if weight < best_length:
-
                 best_length = weight
                 best_route = path[:]
         else:
-
-            for i in remaining:
-                new_remaining = remaining - set([i])
-                brute_force(new_remaining, i, path + [i], weight + complete_graph[vertex][i])
+            # Sort neighbors based on the distance from the current vertex
+            sorted_neighbors = sorted(remaining, key=lambda x: complete_graph[vertex][x])
+            
+            for next_vertex in sorted_neighbors:
+                new_remaining = remaining - {next_vertex}
+                new_weight = weight + complete_graph[vertex][next_vertex]
+                
+                # Pruning: if path is already longer than known best, skip this path
+                if new_weight < best_length:
+                    backtrack(new_remaining, next_vertex, path + [next_vertex], new_weight)
     
-    # Start the brute-force search from the source vertex
-    initial_remaining = set(range(n)) - set([source])
-    brute_force(initial_remaining, source, [source], 0)
+    # Start the backtracking search from the source vertex
+    initial_remaining = set(range(n)) - {source}
+    backtrack(initial_remaining, source, [source], 0)
     
     # Add the source vertex to the end of the best route to complete the cycle
     best_route.append(source)
