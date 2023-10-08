@@ -26,7 +26,7 @@ import tqdm
 # Previously developed functions
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "programs"))
 import tsp_1_bis as program_1
-import tsp_2_bis as program_2
+import tsp_1 as program_2
 
 #####################################################################################################################################################
 ############################################################### VARIABLES & CONSTANTS ###############################################################

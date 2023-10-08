@@ -21,11 +21,10 @@
 from pyrat import *
 
 # External imports 
-import random
+import random, heapq
 
 # Previously developed functions
-from tutorial import get_neighbors, locations_to_action
-from dijkstra import dijkstra, locations_to_actions, find_route
+fromo tutorial import get_neighbors, locations_to_actions
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -37,174 +36,41 @@ from dijkstra import dijkstra, locations_to_actions, find_route
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
-def graph_to_metagraph ( graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-                         vertices: List[int]
-                        ) -> Tuple[numpy.ndarray, Dict[int, Union[None, int]]] :
+def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
+                 current_vertex: int,
+                 targets:        List[int]
+               ) ->              Tuple[List[float], Dict[int, Union[None, int]]]:
     """
-        Function to build a complete graph out of locations of interest in a given graph.
+        Function that associates a score to each target.
         In:
-            * graph:    Graph containing the vertices of interest.
-            * vertices: Vertices to use in the complete graph.
-        Out:
-            * complete_graph: Complete graph of the vertices of interest.
-            * routing_tables: Dictionary of routing tables obtained by traversals used to build the complete graph.
-    """
-    n = len(vertices)
-
-    # Initialize with zeros the new complete graph
-    complete_graph = {}
-
-    # To store the routing tables
-    routing_tables = {}
-
-    for vertex_1 in vertices :
-
-        # Perform Dijktra's algorithm starting from vertex1 to get 
-        distances, routing_table = dijkstra(vertex_1, graph)
-
-        # Store the routing table for vertex_1
-        routing_tables[vertex_1] = routing_table
-
-        for vertex_2 in vertices :
-
-            if vertex_2 != vertex_1  :
-
-                if vertex_1 not in complete_graph:
-
-                    complete_graph[vertex_1] = {vertex_2: distances[vertex_2]}
-
-                else :
-
-                    # Fill the complete graph with the distances from vertex_1 to vertex_2
-                    complete_graph[vertex_1][vertex_2] = distances[vertex_2]
-
-    return complete_graph, routing_tables
-    
-
-#####################################################################################################################################################
-
-def dfs_recursive ( source: int,
-                    graph:  Union[numpy.ndarray, Dict[int, Dict[int, int]]]
-                  ) ->      Tuple[Dict[int, int], Dict[int, Union[None, int]]]:
-    """
-        This is a recursive implementation of the DFS.
-        At each call, we check if we are done with the traversal, and then we explore unexplored neighbors.
-        This implementation stops when the spanning tree is done, i.e. when all vertices have been explored once.
-        In:
-            * source: Vertex from which to start the traversal.
-            * graph:  Graph on which to perform the traversal.
-        Out:
-            * distances_to_explored_vertices: Dictionary where keys are explored vertices and associated values are the lengths of the paths to reach them.
-            * routing_table:                  Routing table to allow reconstructing the paths obtained by the traversal.
-    """
-    
-    # We will fill these variables during the traversal
-    routing_table = {source: None}
-    distances_to_explored_vertices = {source: 0}
-    
-    # Internal implementation of the recursive DFS
-    def _dfs_recursive (current_vertex, parent_vertex, current_length):
-        
-        # Visit the vertex
-        print("Visiting", current_vertex, "at distance", current_length, "from start along the explored path")
-        routing_table[current_vertex] = parent_vertex
-        distances_to_explored_vertices[current_vertex] = current_length
-        
-        # We stop when all vertices are visited
-        if len(distances_to_explored_vertices) == len(graph) :
-            print("Spanning tree done, all vertices have been explored once using DFS")
-            return
-        
-        # If there are still vertices to visit, we explore unexplored neighbors
-        for neighbor in graph[current_vertex] :
-            if neighbor not in distances_to_explored_vertices :
-                _dfs_recursive(neighbor, current_vertex, current_length + graph[current_vertex][neighbor])
-    
-    # Perform the traversal
-    _dfs_recursive(source, None, 0)
-    return distances_to_explored_vertices, routing_table
-
-#####################################################################################################################################################
-
-def tsp ( complete_graph: numpy.ndarray,
-          source:         int
-        ) ->              Tuple[List[int], int]:
-    """
-        Function to solve the TSP using an exhaustive search.
-        In:
-            * complete_graph: Complete graph of the vertices of interest.
-            * source:         Vertex used to start the search.
-        Out:
-            * best_route:  Best route found in the search.
-            * best_length: Length of the best route found.
-    """
-    n = len(complete_graph)
-    
-    # Initialize variables to store the best route and its length
-    best_route = []
-    best_length = float('inf')
-    
-    # Define a recursive function for the brute-force search
-    def brute_force(graph, vertex, path, weight):
-        """
-        Recursive helper function to explore all possible routes.
-
-        Args:
-            * graph (dict): The complete graph.
-            * vertex (int): The current vertex.
-            * path (list): The route taken so far.
-            * weight (int): The length of the route so far.
-        """
-        nonlocal best_length, best_route
-
-        if len(path) == len(graph) :
-
-            if weight < best_length:
-
-                best_length = weight
-                best_route = path
-
-            return
-        
-        for neighbor in get_neighbors(vertex, graph) :
+            * graph:          Graph containing the vertices.
+            * current_vertex: Current location of the player in the maze.
             
-            if neighbor not in path :
-                
-                brute_force(graph, neighbor, path + [neighbor], weight + graph[vertex][neighbor])
+        Out:
+            * scores:        Scores given to the targets.
+            * routing_table: Routing table obtained from the current vertex.
+    """
     
-    # Start the brute-force search from the source vertex
-    brute_force(complete_graph, source, [source], 0)
-    return best_route, best_length
-
+    # TODO: Fill here
 
 #####################################################################################################################################################
 
-def expand_route (  route_in_complete_graph: List[int], 
-                    routing_tables: Dict[int, Dict[int, Union[None, int]]], 
-                    cell_names: List[int]
-                ) -> List[int]:
+def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
+             initial_vertex: int,
+             vertices:       List[int]
+           ) ->              List[int]:
     """
-    Returns the route in the original graph corresponding to a route in the complete graph.
-    
-    Args:
-        route_in_complete_graph: List of locations in the complete graph.
-        routing_tables: Routing tables obtained when building the complete graph.
-        cell_names: List of cells in the graph that were used to build the complete graph.
-
-    Returns:
-        route: Route in the original graph corresponding to the given one.
+        Greedy algorithm that goes to the score maximizer in a loop.
+        In:
+            * graph:          Graph containing the vertices.
+            * initial_vertex: Initial location of the player in the maze.
+            * vertices:       Vertices to visit with the greedy heuristic.
+        Out:
+            * route: Route to follow to perform the path through all vertices.
     """
     
-    route = []
+    # TODO: Fill here
 
-    for i in range(len(route_in_complete_graph) - 1):
-        
-        route += find_route(routing_tables[route_in_complete_graph[i]], route_in_complete_graph[i], route_in_complete_graph[i + 1])
-
-    return route
-
-
-    
 #####################################################################################################################################################
 ##################################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ####################################################
 #####################################################################################################################################################
@@ -238,19 +104,9 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
         Out:
             * None.
     """
-    # Convert maze to a graph representation and select vertices of interest
-    current_position = player_locations[name]
-    vertices_of_interest = [current_position] + cheese
 
-    # Build the complete graph and routing tables using graph_to_metagraph function
-    complete_graph, routing_tables = graph_to_metagraph(maze, vertices_of_interest)
-
-    best_route, best_length = tsp(complete_graph, current_position)
-
-    route = expand_route(best_route, routing_tables, vertices_of_interest)
-
-    memory.actions = locations_to_actions(route, maze_width)
-
+    memory.source = player_locations[name]
+    memory.route = greedy(maze, start_location, cheese)
     
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
@@ -289,8 +145,9 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
             * action: One of the possible actions, as given in possible_actions.
     """
 
-    action = memory.actions.pop(0)
-    return action 
+    # [TODO] Write your turn code here and do not forget to return a possible action
+    action = possible_actions[0]
+    return action
 
 #####################################################################################################################################################
 ######################################################## EXECUTED ONCE AT THE END OF THE GAME #######################################################
@@ -331,23 +188,27 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
 
     # [TODO] Write your postprocessing code here
     pass
-
-#################################################################################################################
-###################################################### GO ! #####################################################
-#################################################################################################################
+    
+#####################################################################################################################################################
+######################################################################## GO! ########################################################################
+#####################################################################################################################################################
 
 if __name__ == "__main__":
+
     # Map the functions to the character
-    players = [{"name": "TSP 1", "preprocessing_function": preprocessing, "turn_function": turn}]
+    players = [{"name": "greedy 1", "preprocessing_function": preprocessing, "turn_function": turn}]
+    
     # Customize the game elements
     config = {"maze_width": 15,
               "maze_height": 11,
               "mud_percentage": 40.0,
-              "nb_cheese": 8,
+              "nb_cheese": 21,
               "trace_length": 1000}
+    
     # Start the game
     game = PyRat(players, **config)
     stats = game.start()
+    
     # Show statistics
     print(stats)
 
