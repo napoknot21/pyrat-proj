@@ -24,8 +24,9 @@ from pyrat import *
 import random, heapq
 
 # Previously developed functions
-from tutorial import get_neighbors, locations_to_actions
+from tutorial import get_neighbors, locations_to_action
 from dijkstra import dijkstra, locations_to_actions, find_route
+from bfs import locations_to_actions
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -137,8 +138,9 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
             * None.
     """
 
-    memory.source = player_locations[name]
-    memory.route = greedy(maze, start_location, cheese)
+    source = player_locations[name]
+    route = greedy(maze, source, cheese)
+    memory.actions = locations_to_actions(route)
     
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
@@ -178,7 +180,7 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
     """
 
     # [TODO] Write your turn code here and do not forget to return a possible action
-    action = possible_actions[0]
+    action = memory.actions.pop(0)
     return action
 
 #####################################################################################################################################################
