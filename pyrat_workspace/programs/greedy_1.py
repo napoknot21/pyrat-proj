@@ -24,7 +24,8 @@ from pyrat import *
 import random, heapq
 
 # Previously developed functions
-fromo tutorial import get_neighbors, locations_to_actions
+from tutorial import get_neighbors, locations_to_actions
+from dijkstra import dijkstra, locations_to_actions, find_route
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -50,8 +51,17 @@ def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]]
             * scores:        Scores given to the targets.
             * routing_table: Routing table obtained from the current vertex.
     """
+    # Call Dijkstra's algorithm to get distances and predecessors from the current vertex.
+    distances, predecessors = dijkstra(graph, current_vertex)
     
-    # TODO: Fill here
+    # Score for a target is its shortest distance from the current vertex.
+    scores = [distances[target] for target in targets]
+    
+    # The routing table maps each target to its predecessor on the shortest path from the current vertex.
+    routing_table = {target: predecessors[target] for target in targets}
+    
+    # Return the scores and the routing table.
+    return scores, routing_table
 
 #####################################################################################################################################################
 
@@ -68,8 +78,30 @@ def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         Out:
             * route: Route to follow to perform the path through all vertices.
     """
+    # Initialize current_vertex to initial_vertex and set the list of unvisited vertices.
+    current_vertex = initial_vertex
+    unvisited = set(vertices)
+
+    # The route starts with the initial vertex.
+    route = [initial_vertex]
     
-    # TODO: Fill here
+    # While there are still unvisited vertices, continue the greedy algorithm.
+    while unvisited:
+        # Use give_score function to get scores for each unvisited vertex from current_vertex.
+        scores, _ = give_score(graph, current_vertex, list(unvisited))
+        
+        # Find the vertex with the min score
+        next_vertex = min(zip(unvisited, scores), key=lambda x: x[1])[0]
+        
+        # Update current_vertex and remove next_vertex from the set of unvisited vertices.
+        current_vertex = next_vertex
+        unvisited.remove(next_vertex)
+        
+        # Append next_vertex to the route.
+        route.append(next_vertex)
+    
+    # Return the complete route.
+    return route
 
 #####################################################################################################################################################
 ##################################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ####################################################
