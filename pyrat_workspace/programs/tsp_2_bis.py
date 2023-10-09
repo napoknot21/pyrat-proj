@@ -25,7 +25,7 @@ import random
 
 # Previously developed functions
 from tutorial import get_neighbors, locations_to_action
-from dijkstra import dijkstra, locations_to_actions
+from dijkstra import dijkstra, locations_to_actions, find_route
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -52,12 +52,12 @@ def graph_to_metagraph ( graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]]
     n = len(vertices)
 
     # Initialize with zeros the new complete graph
-    complete_graph = numpy.zeros((n,n), dtype=int)
+    complete_graph = {}
 
     # To store the routing tables
     routing_tables = {}
 
-    for i, vertex_1 in enumerate(vertices) :
+    for vertex_1 in vertices :
 
         # Perform Dijktra's algorithm starting from vertex1 to get 
         distances, routing_table = dijkstra(vertex_1, graph)
@@ -65,12 +65,18 @@ def graph_to_metagraph ( graph : Union[numpy.ndarray, Dict[int, Dict[int, int]]]
         # Store the routing table for vertex_1
         routing_tables[vertex_1] = routing_table
 
-        for j, vertex_2 in enumerate(vertices) :
+        for vertex_2 in vertices :
 
-            if vertex_1 != vertex_2 :
+            if vertex_2 != vertex_1  :
 
-                # Fill the complete graph with the distances from vertex_1 to vertex_2
-                complete_graph[i][j] = distances[vertex_2]
+                if vertex_1 not in complete_graph:
+
+                    complete_graph[vertex_1] = {vertex_2: distances[vertex_2]}
+
+                else :
+
+                    # Fill the complete graph with the distances from vertex_1 to vertex_2
+                    complete_graph[vertex_1][vertex_2] = distances[vertex_2]
 
     return complete_graph, routing_tables
 
@@ -132,38 +138,45 @@ def tsp ( complete_graph: numpy.ndarray,
             * best_length: Length of the best route found.
     """
     n = len(complete_graph)
-
+    
     # Initialize variables to store the best route and its length
     best_route = []
     best_length = float('inf')
+    
+    # Define a recursive function for the brute-force search
+    def backtrack(graph, vertex, path, weight):
+        """
+        Recursive helper function to explore all possible routes.
 
-    def backtrack(path: List[int], remaining: set, current_length: int) -> None:
-        nonlocal best_route, best_length
+        Args:
+            * graph (dict): The complete graph.
+            * vertex (int): The current vertex.
+            * path (list): The route taken so far.
+            * weight (int): The length of the route so far.
+        """
+        nonlocal best_length, best_route
 
         # If the path so far is longer than the best known, return (pruning step)
-        if current_length >= best_length:
+        if weight >= best_length:
             return
 
-        # If all vertices are visited, check if it forms a shorter route
-        if not remaining:
-            if current_length < best_length:
-                best_route = path[:]
-                best_length = current_length
+        if len(path) == len(graph) :
+
+            if weight < best_length:
+
+                best_length = weight
+                best_route = path
+
             return
-
-        # Explore vertices in remaining
-        for vertex in list(remaining):
-            new_length = current_length + complete_graph[path[-1]][vertex]
-            new_remaining = remaining - {vertex}
-            backtrack(path + [vertex], new_remaining, new_length)
-
-    # Start the backtracking search from the source vertex
-    initial_remaining = set(range(n)) - {source}
-    backtrack([source], initial_remaining, 0)
-
-    # Add the source vertex to the end of the best route to complete the cycle
-    best_route.append(source)
+        
+        for neighbor in get_neighbors(vertex, graph) :
+            
+            if neighbor not in path :
+                
+                backtrack(graph, neighbor, path + [neighbor], weight + graph[vertex][neighbor])
     
+    # Start the brute-force search from the source vertex
+    backtrack(complete_graph, source, [source], 0)
     return best_route, best_length
 
 #####################################################################################################################################################
@@ -206,20 +219,26 @@ def expand_route (  route_in_complete_graph: List[int],
     
     return route
     """
+    """
+    Returns the route in the original graph corresponding to a route in the complete graph.
+    
+    Args:
+        route_in_complete_graph: List of locations in the complete graph.
+        routing_tables: Routing tables obtained when building the complete graph.
+        cell_names: List of cells in the graph that were used to build the complete graph.
+
+    Returns:
+        route: Route in the original graph corresponding to the given one.
+    """
+    
     route = []
 
-    for sub_route in route_in_complete_graph:
-        for i in range(len(sub_route) - 1):
-            source = sub_route[i]
-            target = sub_route[i + 1]
-
-            current_vertex = source
-            while current_vertex != target:
-                next_vertex = routing_tables[current_vertex][target]
-                route.append(cell_names[current_vertex])
-                current_vertex = next_vertex
+    for i in range(len(route_in_complete_graph) - 1):
+        
+        route += find_route(routing_tables[route_in_complete_graph[i]], route_in_complete_graph[i], route_in_complete_graph[i + 1])
 
     return route
+
 
     
 #####################################################################################################################################################
@@ -260,8 +279,13 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     vertices_of_interest = [current_position] + cheese
 
     # Build the complete graph and routing tables using graph_to_metagraph function
-    memory.complete_graph, memory.routing_tables = graph_to_metagraph(maze, vertices_of_interest)
-    memory.cell_names = vertices_of_interest
+    complete_graph, routing_tables = graph_to_metagraph(maze, vertices_of_interest)
+
+    best_route, best_length = tsp(complete_graph, current_position)
+
+    route = expand_route(best_route, routing_tables, vertices_of_interest)
+
+    memory.actions = locations_to_actions(route, maze_width)
 
     
 #####################################################################################################################################################
@@ -301,16 +325,8 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
             * action: One of the possible actions, as given in possible_actions.
     """
 
-    if cheese:  # Check if there is still cheese left
-    
-        source_index = memory.cell_names.index(player_locations[name])
-        tsp_cheese = tsp(memory.complete_graph, source_index)
-        path_to_cheese = expand_route(tsp_cheese, memory.routing_tables, memory.cell_names)
-        actions_to_cheese = locations_to_actions(path_to_cheese, maze_width)
-        
-        return actions_to_cheese[0] if actions_to_cheese else random.choice(possible_actions)
-    
-    return choice(possible_actions)
+    action = memory.actions.pop(0)
+    return action 
 
 #####################################################################################################################################################
 ######################################################## EXECUTED ONCE AT THE END OF THE GAME #######################################################
