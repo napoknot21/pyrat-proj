@@ -25,8 +25,8 @@ import random, heapq
 
 # Previously developed functions
 from tutorial import get_neighbors, locations_to_action
-from dijkstra import dijkstra, locations_to_actions, find_route
-from bfs import locations_to_actions
+from dijkstra import dijkstra, locations_to_actions, find_route, traversal
+from bfs import locations_to_actions, bfs
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -53,7 +53,7 @@ def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]]
             * routing_table: Routing table obtained from the current vertex.
     """
     # Call Dijkstra's algorithm to get distances and predecessors from the current vertex.
-    distances, predecessors = dijkstra(graph, current_vertex)
+    distances, predecessors = dijkstra(current_vertex, graph)
     
     # Score for a target is its shortest distance from the current vertex.
     scores = [distances[target] for target in targets]

@@ -58,8 +58,9 @@ def traversal ( source              :   int,
     """
     visited_vertices = set()  # for O(1) lookups
     queue_structure = create_structure()
-    routing_table = {source: None}
-    distances_to_explored_vertices = {source: 0}
+
+    routing_table = {}
+    distances_to_explored_vertices = {}
     
     push_to_structure(queue_structure, (0, source, None))  # push (distance, vertex, parent)
 
@@ -68,19 +69,15 @@ def traversal ( source              :   int,
         distance, vertex, parent = pop_from_structure(queue_structure)
 
         # Check if we've visited this vertex before
-        if vertex in visited_vertices:
-            continue  # Skip this iteration
-        
-        # Mark the vertex as visited
-        visited_vertices.add(vertex)
+        if vertex not in distances_to_explored_vertices : 
 
-        # Update distances and routing table
-        distances_to_explored_vertices[vertex] = distance
-        routing_table[vertex] = parent
+            # Update distances and routing table
+            distances_to_explored_vertices[vertex] = distance
+            routing_table[vertex] = parent
 
-        # Loop over the neighbors of the current vertex
-        for neighbor in get_neighbors(vertex, graph):
-            if neighbor not in visited_vertices:
+            # Loop over the neighbors of the current vertex
+            for neighbor in get_neighbors(vertex, graph):
+
                 new_distance = distance + graph[vertex][neighbor]  # TODO: Replace 1 with the weight if your graph has weights
                 push_to_structure(queue_structure, (new_distance, neighbor, vertex))
 
