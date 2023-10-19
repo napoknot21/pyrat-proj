@@ -140,7 +140,8 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
 
     source = player_locations[name]
     route = greedy(maze, source, cheese)
-    memory.actions = locations_to_actions(route)
+    print(route)
+    memory.actions = locations_to_actions(route, maze_width)
     
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
