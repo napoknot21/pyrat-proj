@@ -25,7 +25,7 @@ import random, heapq
 from queue import PriorityQueue
 
 # Previously developed functions
-from tutorial import get_neighbors, locations_to_action
+from tutorial import get_neighbors, get_weight
 from dijkstra import find_route, locations_to_actions
 
 #####################################################################################################################################################
@@ -72,10 +72,11 @@ def a_star ( start: int,
         This function returns a path from the start location to the target location in a maze using a heuristic.
         
         In:
-            * start:     Starting vertex.
-            * target:    Target vertex.
-            * graph:     Graph representation of the maze.
-            * heuristic: Heuristic function to estimate the distance from a vertex to the target.
+            * start:      Starting vertex.
+            * target:     Target vertex.
+            * graph:      Graph representation of the maze.
+            * heuristic:  Heuristic function to estimate the distance from a vertex to the target.
+            * maze_width: Width of the maze in number of cells. 
             
         Out:
             * List of vertices representing the path from start to target. If no path is found, returns an empty list.
@@ -119,7 +120,7 @@ def a_star ( start: int,
             if neighbor in closed_set:
                 continue
 
-            tentative_g_score = g_score[current] + graph[current][neighbor]
+            tentative_g_score = g_score[current] + get_weight(current, neighbor, graph)
 
             if tentative_g_score < g_score[neighbor]:
 
@@ -133,21 +134,27 @@ def a_star ( start: int,
 
 #####################################################################################################################################################
 
-def _reconstruct_path(came_from, start, goal):
+def _reconstruct_path ( routing_table , 
+                        start : int,
+                        target: int
+                      ) -> List[int] :
     """
     Reconstruct the path from start to goal using the came_from dictionary.
 
-    :param came_from: A dictionary mapping a node to its predecessor in the path.
-    :param start: The starting node.
-    :param goal: The goal node.
-    :return: A list representing the path from start to goal.
+    In:
+        * routing_table:    A dictionary mapping a node to its predecessor in the path.
+        * start:            The starting node.
+        * target:           The goal node.
+    
+    Out:
+        * path: A list representing the path from start to goal.
     """
-    current = goal
+    current = target
     path = [current]
 
     while current != start:
     
-        current = came_from[current]
+        current = routing_table[current]
         path.insert(0, current)
     
     return path

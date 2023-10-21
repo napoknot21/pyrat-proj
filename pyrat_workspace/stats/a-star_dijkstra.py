@@ -16,7 +16,6 @@ from pyrat import *
 
 # External imports
 import sys
-import time
 import matplotlib.pyplot as pyplot
 import scipy.stats
 import os
@@ -26,8 +25,8 @@ import tqdm
 
 # Previously developed functions
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "programs"))
-import random_1 as program_1
-import random_2 as program_2
+import dijkstra as program_1
+import a_star as program_2
 
 #####################################################################################################################################################
 ############################################################### VARIABLES & CONSTANTS ###############################################################
@@ -93,27 +92,7 @@ def run_one_game ( seed:      int,
         
     # Start the game
     game = PyRat(players, **config)
-
-    program_1_times = []
-    program_2_times = []
-
-    game = PyRat(players, **config)
-
-    for turn in range(game.nb_turns):
-        start_time = time.time()
-        program_1.turn(...)
-        program_1_times.append(time.time() - start_time)
-
-        start_time = time.time()
-        program_2.turn(...)
-        program_2_times.append(time.time() - start_time)
-
-
     stats = game.start()
-
-    stats["program_1_execution_time"] = sum(program_1_times)
-    stats["program_2_execution_time"] = sum(program_2_times)
-
     return stats
     
 #####################################################################################################################################################
@@ -122,9 +101,6 @@ def run_one_game ( seed:      int,
 
 if __name__ == "__main__":
 
-    program_1_total_time = []
-    program_2_total_time = []
-
     # Run multiple games
     results = []
     for seed in tqdm.tqdm(range(NB_GAMES), desc="Game", position=0, leave=False):
@@ -132,8 +108,6 @@ if __name__ == "__main__":
         # Store score difference as result
         stats = run_one_game(seed, program_1, program_2)
         results.append(int(stats["players"][program_1.__name__]["score"] - stats["players"][program_2.__name__]["score"]))
-        program_1_total_time.append(stats["program_1_execution_time"])
-        program_2_total_time.append(stats["program_2_execution_time"])
         
     # Show results briefly
     print("#" * 20)

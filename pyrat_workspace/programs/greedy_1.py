@@ -26,8 +26,6 @@ import random, heapq
 # Previously developed functions
 from tutorial import get_neighbors, locations_to_action
 from dijkstra import dijkstra, locations_to_actions, find_route, traversal
-from bfs import locations_to_actions, bfs
-from tsp_1 import expand_route
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -53,17 +51,15 @@ def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]]
             * scores:        Scores given to the targets.
             * routing_table: Routing table obtained from the current vertex.
     """
+
     # Call Dijkstra's algorithm to get distances and predecessors from the current vertex.
-    distances, predecessors = dijkstra(current_vertex, graph)
+    distances, routing_tables = dijkstra(current_vertex, graph)
     
     # Score for a target is its shortest distance from the current vertex.
     scores = [distances[target] for target in targets]
     
-    # The routing table maps each target to its predecessor on the shortest path from the current vertex.
-    routing_table = {target: predecessors[target] for target in targets}
-    
     # Return the scores and the routing table.
-    return scores, routing_table
+    return scores, routing_tables
 
 #####################################################################################################################################################
 
@@ -85,25 +81,26 @@ def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
     unvisited = set(vertices)
 
     # The route starts with the initial vertex.
-    route = []
+    route = [current_vertex]
 
     # While there are still unvisited vertices, continue the greedy algorithm.
     while unvisited:
 
         # Use give_score function to get scores for each unvisited vertex from current_vertex.
-        scores, routing_table = give_score(graph, current_vertex, list(unvisited))    
+        scores, routing_tables = give_score(graph, current_vertex, list(unvisited))    
         
         # Find the vertex with the min score
         next_vertex = min(zip(unvisited, scores), key=lambda x: x[1])[0]
         
-        route_a2b = find_route(routing_table, current_vertex, next_vertex)
+        # We use the routing_tables to retrieve the route from current_vertex to next_vertex
+        route_a2b = find_route(routing_tables, current_vertex, next_vertex)
 
         # Update current_vertex and remove next_vertex from the set of unvisited vertices.
-        current_vertex = next_vertex
-        unvisited.remove(next_vertex)
+        current_vertex = route_a2b[-1]
+        unvisited.remove(current_vertex)
         
-        # Append next_vertex to the route.
-        route += route_a2b
+        # Append the route_a2b to the main route, but skip appending the current_vertex as it's already added.
+        route += route_a2b[1:]
     
     # Return the complete route.
     return route
