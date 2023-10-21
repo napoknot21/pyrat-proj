@@ -22,12 +22,11 @@ from pyrat import *
 
 # External imports 
 import random, heapq
+from queue import PriorityQueue
 
 # Previously developed functions
 from tutorial import get_neighbors, locations_to_action
-from dijkstra import dijkstra, locations_to_actions, find_route, traversal
-from bfs import locations_to_actions, bfs
-from tsp_1 import expand_route
+from dijkstra import find_route, locations_to_actions
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -39,74 +38,120 @@ from tsp_1 import expand_route
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
-def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-                 current_vertex: int,
-                 targets:        List[int]
-               ) ->              Tuple[List[float], Dict[int, Union[None, int]]]:
+def manhattan_distance ( vertex1: int,
+                         vertex2: int,
+                         maze_width: int
+                       ) -> float:
     """
-        Function that associates a score to each target.
+        The heuristic function.
+        Computes the Manhattan distance between two vertices in a grid.
+        
         In:
-            * graph:          Graph containing the vertices.
-            * current_vertex: Current location of the player in the maze.
+            * vertex1:   The first vertex.
+            * vertex2:   The second vertex.
+            * maze_width: Width of the maze in number of cells.
             
         Out:
-            * scores:        Scores given to the targets.
-            * routing_table: Routing table obtained from the current vertex.
+            * The Manhattan distance between the two vertices.
     """
-    # Call Dijkstra's algorithm to get distances and predecessors from the current vertex.
-    distances, predecessors = dijkstra(current_vertex, graph)
-    
-    # Score for a target is its shortest distance from the current vertex.
-    scores = [distances[target] for target in targets]
-    
-    # The routing table maps each target to its predecessor on the shortest path from the current vertex.
-    routing_table = {target: predecessors[target] for target in targets}
-    
-    # Return the scores and the routing table.
-    return scores, routing_table
+    x1, y1 = vertex1 % maze_width, vertex1 // maze_width
+    x2, y2 = vertex2 % maze_width, vertex2 // maze_width
+    res = abs(x1 - x2) + abs(y1 - y2)
+    return res
 
 #####################################################################################################################################################
 
-def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-             initial_vertex: int,
-             vertices:       List[int]
-           ) ->              List[int]:
+def a_star ( start: int,
+             target: int,
+             graph: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
+             heuristic: Callable[[int, int], float],
+             maze_width : int
+           ) -> List[int] :
     """
-        Greedy algorithm that goes to the score maximizer in a loop.
+        A* search algorithm.
+        This function returns a path from the start location to the target location in a maze using a heuristic.
+        
         In:
-            * graph:          Graph containing the vertices.
-            * initial_vertex: Initial location of the player in the maze.
-            * vertices:       Vertices to visit with the greedy heuristic.
+            * start:     Starting vertex.
+            * target:    Target vertex.
+            * graph:     Graph representation of the maze.
+            * heuristic: Heuristic function to estimate the distance from a vertex to the target.
+            
         Out:
-            * route: Route to follow to perform the path through all vertices.
+            * List of vertices representing the path from start to target. If no path is found, returns an empty list.
     """
-    # Initialize current_vertex to initial_vertex and set the list of unvisited vertices.
-    current_vertex = initial_vertex
-    unvisited = set(vertices)
+    closed_set = set() # The set of nodes already evaluated
+    open_set = set([start]) # The set of discovered nodes that are not evaluated yet.
 
-    # The route starts with the initial vertex.
-    route = []
+    routing_table = {}
 
-    # While there are still unvisited vertices, continue the greedy algorithm.
-    while unvisited:
+    # For each node, the cost of getting from the start node to that node.
+    g_score = {node: float('inf') for node in graph.keys()}
+    g_score[start] = 0
 
-        # Use give_score function to get scores for each unvisited vertex from current_vertex.
-        scores, routing_table = give_score(graph, current_vertex, list(unvisited))    
+    # For each node, the total cost of getting from the start node to the goal by passing by that node.
+    f_score = {node: float('inf') for node in graph.keys()}
+    f_score[start] = heuristic(start, target, maze_width)
+
+    # Nodes to be evaluated, with f_score as the priority
+    open_queue = PriorityQueue()
+    open_queue.put((f_score[start], start))
+
+    while not open_queue.empty():
         
-        # Find the vertex with the min score
-        next_vertex = min(zip(unvisited, scores), key=lambda x: x[1])[0]
-        
-        route_a2b = find_route(routing_table, current_vertex, next_vertex)
+        # Get the node in open_set having the lowest f_score value
+        _, current = open_queue.get()
 
-        # Update current_vertex and remove next_vertex from the set of unvisited vertices.
-        current_vertex = next_vertex
-        unvisited.remove(next_vertex)
-        
-        # Append next_vertex to the route.
-        route += route_a2b
+        # If the current node is already evaluated, skip it
+        if current in closed_set:
+            continue
+
+        # If we have reached the goal, reconstruct and return the path
+        if current == target:
+            return _reconstruct_path(routing_table, start, target)
+
+        open_set.remove(current)
+        closed_set.add(current)
+
+        # Evaluate all neighbors of the current node
+        for neighbor in get_neighbors(current, graph):
+            
+            if neighbor in closed_set:
+                continue
+
+            tentative_g_score = g_score[current] + graph[current][neighbor]
+
+            if tentative_g_score < g_score[neighbor]:
+
+                routing_table[neighbor] = current
+                g_score[neighbor] = tentative_g_score
+                f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, target, maze_width)
+                open_set.add(neighbor)
+                open_queue.put((f_score[neighbor], neighbor))
     
-    # Return the complete route.
-    return route
+    return []
+
+#####################################################################################################################################################
+
+def _reconstruct_path(came_from, start, goal):
+    """
+    Reconstruct the path from start to goal using the came_from dictionary.
+
+    :param came_from: A dictionary mapping a node to its predecessor in the path.
+    :param start: The starting node.
+    :param goal: The goal node.
+    :return: A list representing the path from start to goal.
+    """
+    current = goal
+    path = [current]
+
+    while current != start:
+    
+        current = came_from[current]
+        path.insert(0, current)
+    
+    return path
+
 
 #####################################################################################################################################################
 ##################################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ####################################################
@@ -141,12 +186,16 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
         Out:
             * None.
     """
+    start_location = player_locations[name]
 
-    source = player_locations[name]
-    route = greedy(maze, source, cheese)
-    print(route)
-    memory.actions = locations_to_actions(route, maze_width)
+    # A* Path to cheese
+    path_to_cheese_a_star = a_star(start_location, cheese[0], maze, manhattan_distance, maze_width)
+    actions_to_cheese_a_star = locations_to_actions(path_to_cheese_a_star, maze_width)
     
+    # Store the actions to the cheese in memory
+    memory.actions_to_cheese_a_star = actions_to_cheese_a_star
+
+
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
 #####################################################################################################################################################
@@ -184,50 +233,12 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
             * action: One of the possible actions, as given in possible_actions.
     """
 
-    # [TODO] Write your turn code here and do not forget to return a possible action
-    action = memory.actions.pop(0)
+    if not memory.actions_to_cheese_a_star :
+        return random.choice(possible_actions)
+
+    action = memory.actions_to_cheese_a_star.pop(0)
     return action
 
-#####################################################################################################################################################
-######################################################## EXECUTED ONCE AT THE END OF THE GAME #######################################################
-#####################################################################################################################################################
-
-def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-                     maze_width:       int,
-                     maze_height:      int,
-                     name:             str,
-                     teams:            Dict[str, List[str]],
-                     player_locations: Dict[str, int],
-                     player_scores:    Dict[str, float],
-                     player_muds:      Dict[str, Dict[str, Union[None, int]]],
-                     cheese:           List[int],
-                     possible_actions: List[str],
-                     memory:           threading.local,
-                     stats:            Dict[str, Any],
-                   ) ->                None:
-
-    """
-        This function is called once at the end of the game.
-        It is not timed, and can be used to make some cleanup, analyses of the completed game, model training, etc.
-        In:
-            * maze:             Map of the maze, as data type described by PyRat's "maze_representation" option.
-            * maze_width:       Width of the maze in number of cells.
-            * maze_height:      Height of the maze in number of cells.
-            * name:             Name of the player controlled by this function.
-            * teams:            Recap of the teams of players.
-            * player_locations: Locations for all players in the game.
-            * player_scores:    Scores for all players in the game.
-            * player_muds:      Indicates which player is currently crossing mud.
-            * cheese:           List of available pieces of cheese in the maze.
-            * possible_actions: List of possible actions.
-            * memory:           Local memory to share information between preprocessing, turn and postprocessing.
-        Out:
-            * None.
-    """
-
-    # [TODO] Write your postprocessing code here
-    pass
-    
 #####################################################################################################################################################
 ######################################################################## GO! ########################################################################
 #####################################################################################################################################################
@@ -235,14 +246,15 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
 if __name__ == "__main__":
 
     # Map the functions to the character
-    players = [{"name": "greedy 1", "preprocessing_function": preprocessing, "turn_function": turn}]
+    players = [{"name": "A*", "preprocessing_function": preprocessing, "turn_function": turn}]
     
     # Customize the game elements
     config = {"maze_width": 15,
               "maze_height": 11,
               "mud_percentage": 40.0,
-              "nb_cheese": 21,
-              "trace_length": 1000}
+              "nb_cheese": 1,
+              "trace_length": 1000
+              }
     
     # Start the game
     game = PyRat(players, **config)
@@ -251,5 +263,5 @@ if __name__ == "__main__":
     # Show statistics
     print(stats)
 
-#################################################################################################################
-#################################################################################################################
+#####################################################################################################################################################
+#####################################################################################################################################################

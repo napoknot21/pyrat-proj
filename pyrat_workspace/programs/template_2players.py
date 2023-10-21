@@ -3,14 +3,8 @@
 #####################################################################################################################################################
 
 """
-    This program is an empty PyRat program file.
-    It serves as a template for your own programs.
-    Some [TODO] comments below are here to help you keep your code organized.
-    Note that all PyRat programs must have a "turn" function.
-    Functions "preprocessing" and "postprocessing" are optional.
-    Please check the documentation of these functions for more info on their purpose.
-    Also, the PyRat website gives more detailed explanation on how a PyRat game works.
-    https://formations.imt-atlantique.fr/pyrat
+    Contrary to the "template.py" file, there are 2 players here.
+    Here, opponent is "random_3.py".
 """
 
 #####################################################################################################################################################
@@ -20,11 +14,14 @@
 # Import PyRat
 from pyrat import *
 
-# External imports 
-import random, heapq
+# External imports# External imports 
+import random
 
 # Previously developed functions
 from tutorial import get_neighbors, locations_to_action
+
+# [TODO] Put imports of functions you have developed in previous lessons here
+import tsp_1 as opponent
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -36,140 +33,7 @@ from tutorial import get_neighbors, locations_to_action
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
-def traversal ( source              :   int,
-                graph               :   Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-                create_structure    :   Callable[[], Any],
-                push_to_structure   :   Callable[[Any, Tuple[int, int, int]], None],
-                pop_from_structure  :   Callable[[Any], Tuple[int, int, int]],
-              ) -> Tuple[Dict[int, int], Dict[int, Union[None, int]]]:
-    """
-        Traversal function that explores a graph from a given vertex.
-        This function is generic and can be used for most graph traversal.
-        To adapt it to a specific traversal, you need to provide the adapted functions to create, push and pop elements from the structure.
-        In:
-            * source:             Vertex from which to start the traversal.
-            * graph:              Graph on which to perform the traversal.
-            * create_structure:   Function that creates an empty structure to use in the traversal.
-            * push_to_structure:  Function that adds an element of type B to the structure of type A.
-            * pop_from_structure: Function that returns and removes an element of type B from the structure of type A.
-        Out:
-            * distances_to_explored_vertices: Dictionary where keys are explored vertices and associated values are the lengths of the paths to reach them.
-            * routing_table:                  Routing table to allow reconstructing the paths obtained by the traversal.
-    """
-    visited_vertices = set()  # for O(1) lookups
-    queue_structure = create_structure()
-
-    routing_table = {}
-    distances_to_explored_vertices = {vertex: float('inf') for vertex in graph}
-    distances_to_explored_vertices[source] = 0
-    
-    push_to_structure(queue_structure, (0, source, None))  # push (distance, vertex, parent)
-
-    while queue_structure:
-
-        distance, vertex, parent = pop_from_structure(queue_structure)
-
-        if vertex in visited_vertices:
-            continue
-
-        visited_vertices.add(vertex)
-        routing_table[vertex] = parent
-
-        for neighbor in get_neighbors(vertex, graph):
-
-            new_distance = distance + graph[vertex][neighbor]
-
-            if new_distance < distances_to_explored_vertices[neighbor]:
-
-                distances_to_explored_vertices[neighbor] = new_distance
-                push_to_structure(queue_structure, (new_distance, neighbor, vertex))
-
-    return distances_to_explored_vertices, routing_table
-
-#####################################################################################################################################################
-
-def dijkstra ( source: int,
-               graph:  Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-             ) ->      Tuple[Dict[int, int], Dict[int, Union[None, int]]]:
-    """
-        Dijkstra's algorithm is a particular traversal where vertices are explored in an order that is proportional to the distance to the source vertex.
-        In:
-            * source: Vertex from which to start the traversal.
-            * graph:  Graph on which to perform the traversal.
-            * weights: A dictionary for hadling witgths between two vertex
-        Out:
-            * distances_to_explored_vertices: Dictionary where keys are explored vertices and associated values are the lengths of the paths to reach them.
-            * routing_table:                  Routing table to allow reconstructing the paths obtained by the traversal.
-    """
-    
-    # Function to create an empty priority queue
-    def _create_structure ():
-        return []
-
-    # Function to add an element to the priority queue
-    def _push_to_structure (structure, element):
-        heapq.heappush(structure, element)
-    
-    # Function to extract an element from the priority queue
-    def _pop_from_structure (structure):
-        return heapq.heappop(structure)
-    
-    # Perform the traversal
-    distances_to_explored_vertices, routing_table = traversal(source, graph, _create_structure, _push_to_structure, _pop_from_structure)
-    return distances_to_explored_vertices, routing_table
-
-#####################################################################################################################################################
-
-def find_route(routing_table: Dict[int, Union[None, int]],
-               source: int,
-               target: int) -> List[int]:
-    """
-    Function to return a sequence of locations using a provided routing table.
-    In:
-        * routing_table: Routing table as obtained by the traversal.
-        * source:        Vertex from which we start the route (should be the one matching the routing table).
-        * target:        Target to reach using the routing table.
-    Out:
-        * route: Sequence of locations to reach the target from the source, as performed in the traversal.
-    """
-
-    # Check if the target exists in the routing table
-    if target not in routing_table:
-        raise ValueError("The target is not reachable from the source.")
-    
-    route = [target]
-    current_vertex = target
-    
-    # Using a while loop and appending to the route instead of inserting at the beginning
-    while current_vertex != source:
-        current_vertex = routing_table[current_vertex]
-        route.append(current_vertex)
-    
-    return route[::-1] 
-
-#####################################################################################################################################################
-
-def locations_to_actions ( locations:  List[int],
-                           maze_width: int
-                         ) ->          List[str]: 
-    """
-        Function to transform a list of locations into a list of actions to reach vertex i+1 from vertex i.
-        In:
-            * locations:  List of locations to visit in order.
-            * maze_width: Width of the maze in number of cells.
-        Out:
-            * actions: Sequence of actions to visit the list of locations.
-    """
-    
-    # We iteratively transforms pairs of locations in the corresponding action
-    """
-    actions = []
-    for i in range(len(locations) - 1):
-        action = locations_to_action(locations[i], locations[i + 1], maze_width)
-        actions.append(action)
-    return actions
-    """
-    return [locations_to_action(locations[i], locations[i + 1], maze_width) for i in range(len(locations) - 1)]
+# [TODO] It is good practice to keep all developed functions in an easily identifiable section
 
 #####################################################################################################################################################
 ##################################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ####################################################
@@ -204,18 +68,12 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
         Out:
             * None.
     """
+
+    # [TODO] Write your preprocessing code here
+    # To store the already visited cells
+    memory.visited_cells = []
+    memory.trajectory = []
     
-    # Compute shortest path from player's starting position to the cheese
-    start_location = player_locations[name]
-    _, routing_table = dijkstra(start_location, maze)
-
-    # Calculate the path to the cheese
-    path_to_cheese = find_route(routing_table, start_location, cheese[0])
-    actions_to_cheese = locations_to_actions(path_to_cheese, maze_width)
-
-    # Store the actions to the cheese in memory
-    memory.actions_to_cheese = actions_to_cheese
-
 #####################################################################################################################################################
 ######################################################### EXECUTED AT EACH TURN OF THE GAME #########################################################
 #####################################################################################################################################################
@@ -252,15 +110,38 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         Out:
             * action: One of the possible actions, as given in possible_actions.
     """
+
+    # [TODO] Write your turn code here and do not forget to return a possible action
+    #Mark current cell as visited
+    if player_locations[name] not in memory.visited_cells:
+        memory.visited_cells.append(player_locations[name])
+
+    memory.trajectory.append(player_locations[name])
+
+    # Go to an unvisited neighbor in priority
+    neighbors = get_neighbors(player_locations[name], maze)
+    unvisited_neighbors = [neighbor for neighbor in neighbors if neighbor not in memory.visited_cells]
+    if len(unvisited_neighbors) > 0:
+        neighbor = random.choice(unvisited_neighbors)
+        memory.visited_cells.append(neighbor)
+        
+    # If there is no unvisited neighbor, choose one randomly
+    else:
+        
+        if len(memory.trajectory )> 0 :
+        
+            memory.trajectory.pop()
+            neighbor = memory.trajectory[-1]
+            memory.trajectory.pop()
+        
+        else :
+        
+            neighbor = random.choice(neighbors)
+
     
-    # If we have reached the cheese or there are no more actions in our path
-    if not memory.actions_to_cheese:
-        return random.choice(possible_actions)
-
-    # Take the first action towards the cheese and remove it from the list
-    next_action = memory.actions_to_cheese.pop(0)
-
-    return next_action
+    # Retrieve the corresponding action
+    action = locations_to_action(player_locations[name], neighbor, maze_width)
+    return action
 
 #####################################################################################################################################################
 ######################################################## EXECUTED ONCE AT THE END OF THE GAME #######################################################
@@ -299,6 +180,7 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
             * None.
     """
 
+    # [TODO] Write your postprocessing code here
     pass
     
 #####################################################################################################################################################
@@ -306,17 +188,21 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
 #####################################################################################################################################################
 
 if __name__ == "__main__":
+
     # Map the functions to the character
-    players = [{"name": "Dijkstra", "preprocessing_function": preprocessing, "turn_function": turn}]
-    # Customize the game elements
+    players = [{"name": "Template 2", "team": "You", "skin": "rat", "preprocessing_function": preprocessing, "turn_function": turn, "postprocessing_function": postprocessing},
+               {"name": "Random 3", "team": "Opponent", "skin": "python", "preprocessing_function": opponent.preprocessing if "preprocessing" in dir(opponent) else None, "turn_function": opponent.turn, "postprocessing_function": opponent.postprocessing if "postprocessing" in dir(opponent) else None}]
+
+    # Customize the game elements
     config = {"maze_width": 15,
               "maze_height": 11,
-              "mud_percentage": 40.0,
-              "nb_cheese": 1,
-              "trace_length": 1000}
+              "mud_percentage": 0.0,
+              "nb_cheese": 21}
+
     # Start the game
     game = PyRat(players, **config)
     stats = game.start()
+
     # Show statistics
     print(stats)
 
