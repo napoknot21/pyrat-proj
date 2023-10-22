@@ -56,13 +56,12 @@ def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]]
     distances, routing_tables = dijkstra(current_vertex, graph)
     
     # Score for a target is its shortest distance from the current vertex.
-    scores = [distances[target] for target in targets]
+    scores = {target: distances[target] for target in targets}
     
     # Return the scores and the routing table.
     return scores, routing_tables
 
 #####################################################################################################################################################
-
 def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
              initial_vertex: int,
              vertices:       List[int]
@@ -75,6 +74,7 @@ def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
             * vertices:       Vertices to visit with the greedy heuristic.
         Out:
             * route: Route to follow to perform the path through all vertices.
+    """
     """
     # Initialize current_vertex to initial_vertex and set the list of unvisited vertices.
     current_vertex = initial_vertex
@@ -101,9 +101,15 @@ def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         
         # Append the route_a2b to the main route, but skip appending the current_vertex as it's already added.
         route += route_a2b[1:]
+    """
+    scores, routing_table = give_score(graph,initial_vertex,vertices)
     
+    next_vertex = min(scores, key=scores.get)
+    
+    route = find_route(routing_table, initial_vertex, next_vertex)
+
     # Return the complete route.
-    return route
+    return route, next_vertex
 
 #####################################################################################################################################################
 ##################################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ####################################################
@@ -140,7 +146,12 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     """
 
     source = player_locations[name]
-    memory.route = greedy(maze, source, cheese)
+
+    route, cheese_goal = greedy (maze, source, cheese)
+    
+    memory.route = route
+    memory.goal = cheese_goal
+    
     memory.actions = locations_to_actions(memory.route, maze_width)
     
 #####################################################################################################################################################
@@ -179,25 +190,20 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         Out:
             * action: One of the possible actions, as given in possible_actions.
     """
-
-    # Check if the next piece of cheese in our route is still available
-    while memory.route and memory.route[0] not in cheese:
-        memory.route.pop(0)
-        if memory.actions:
-            memory.actions.pop(0)
-
-    # If the route is empty or if the next cheese in the route was eaten by the opponent
-    if not memory.route or not memory.actions:
-        memory.route = greedy(maze, player_locations[name], cheese)
-        memory.actions = locations_to_actions(memory.route, maze_width)
-
-    # Check again to avoid pop from an empty list
-    if memory.actions:
+    
+    if (memory.route != [] and memory.goal in cheese):
+        
         action = memory.actions.pop(0)
-        return action
+    
+    else:
+    
+        route_new, cheese_goal_new = greedy (maze, player_locations[name], cheese)
+        memory.route = route_new
+        memory.goal = cheese_goal_new
+        memory.actions = locations_to_actions(memory.route, maze_width)
+        action = memory.actions.pop(0)
 
-    # Default action if no actions are found
-    return possible_actions[0]
+    return action
 
 #####################################################################################################################################################
 ######################################################## EXECUTED ONCE AT THE END OF THE GAME #######################################################
