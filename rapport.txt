@@ -1,0 +1,99 @@
+Analyse de greedy_1.py
+Ce script Python est destiné à être utilisé dans le jeu PyRat pour déterminer la stratégie de mouvement d'une IA à travers un labyrinthe pour collecter du fromage.
+
+1. Fonctions:
+
+give_score: Cette fonction calcule des scores pour un ensemble de sommets cibles en fonction de leur distance par rapport au sommet actuel. Elle utilise l'algorithme de Dijkstra pour calculer ces distances. La distance la plus courte d'un sommet actuel à une cible représente le score de cette cible.
+
+greedy: L'algorithme glouton vise à calculer un itinéraire à travers le labyrinthe en maximisant le score à chaque étape. Il sélectionne continuellement le sommet cible ayant le score le plus élevé et met à jour son itinéraire pour se diriger vers ce sommet. Ce processus continue jusqu'à ce que tous les sommets cibles aient été visités.
+
+preprocessing: Cette fonction est exécutée une seule fois au début du jeu. Elle sert à effectuer des calculs préliminaires pour l'IA. Les résultats de ces calculs peuvent être stockés dans un objet memory, qui est ensuite accessible lors des tours de jeu. Dans ce script, la fonction calcule un itinéraire à l'aide de la fonction greedy et stocke les actions associées dans la mémoire.
+
+turn: Cette fonction est appelée à chaque tour de jeu. Elle détermine le prochain mouvement de l'IA. Dans ce code, la fonction extrait la prochaine action de la liste d'actions stockée dans la mémoire et la retourne.
+
+Critique et Remarques:
+
+Stratégie : L'idée derrière cette stratégie est de calculer un itinéraire optimal au début du jeu en utilisant l'algorithme glouton. Au cours de chaque tour du jeu, la prochaine étape de cet itinéraire pré-calculé est exécutée.
+
+Limitations : Une limitation potentielle de cette stratégie est qu'elle pourrait ne pas s'adapter bien aux changements d'état du jeu, comme d'autres joueurs qui collectent du fromage ou bloquent des chemins. Comme l'itinéraire est pré-calculé, il n'y a aucun mécanisme pour l'ajuster en fonction de ces changements, ce qui pourrait entraîner une performance sous-optimale dans des jeux où l'état peut changer fréquemment ou de manière imprévisible.
+
+Dépendances : Il est essentiel de s'assurer que les modules nécessaires tels que tutorial, dijkstra, etc., sont correctement implémentés et importés pour que ce script fonctionne.
+
+Conclusion:
+Le script greedy_1.py offre une approche simple mais efficace pour naviguer dans le labyrinthe PyRat. Bien qu'il puisse être performant dans des scénarios simples, il pourrait bénéficier d'améliorations pour gérer des situations plus complexes et dynamiques. Une amélioration potentielle serait de recalculer l'itinéraire à intervalles réguliers ou en réponse à certains événements du jeu.
+
+
+
+
+
+
+
+
+
+Algorithme de recherche glouton (greedy_2.py)
+Le script greedy_2.py implémente une variante de l'algorithme de recherche glouton pour le jeu PyRat. Ce rapport décrit brièvement le fonctionnement du code et la structure des principales fonctions.
+
+Fonctions Principales:
+1. give_score:
+Description: Cette fonction calcule un score pour chaque cible (fromage) en se basant sur la distance minimale entre le sommet actuel (emplacement de la souris) et la cible. La distance est obtenue en utilisant l'algorithme de Dijkstra.
+
+Entrées:
+
+graph: Le labyrinthe représenté sous forme de graphe.
+current_vertex: Position actuelle de la souris.
+targets: Liste des cibles (fromages).
+Sorties:
+
+scores: Scores associés à chaque cible.
+routing_tables: Table de routage obtenue à partir du sommet actuel.
+2. greedy:
+Description: Cette fonction implémente l'algorithme glouton. À chaque étape, elle choisit la cible (fromage) avec le score le plus bas (la distance la plus courte) comme prochaine destination.
+
+Entrées:
+
+graph: Le labyrinthe représenté sous forme de graphe.
+initial_vertex: Position de départ de la souris.
+vertices: Vertices (fromages) à visiter.
+Sorties:
+
+route: Route à suivre pour atteindre la cible choisie.
+next_vertex: La prochaine cible choisie.
+
+Fonctionnement Général:
+Le script commence par une phase de prétraitement où il planifie sa première route vers le fromage le plus proche. À chaque tour, la souris suit cette route. Si elle atteint un fromage ou si le fromage est collecté par un autre joueur, elle recalculera sa route vers le prochain fromage le plus proche. Le script utilise l'algorithme de Dijkstra pour déterminer la distance minimale entre les fromages, et il choisit toujours le fromage le plus proche comme prochain objectif.
+
+
+
+
+
+
+
+
+Analyse de a_star.py
+
+Le script Python présenté est une implémentation de l'algorithme A* pour déterminer la stratégie de mouvement d'une IA dans le jeu PyRat, afin de traverser un labyrinthe pour collecter du fromage.
+
+1. Fonctions:
+
+manhattan_distance: Cette fonction heuristique calcule la distance de Manhattan entre deux sommets dans une grille. Elle est utilisée par l'algorithme A* pour estimer le coût restant vers la destination.
+
+a_star: C'est l'implémentation principale de l'algorithme de recherche A*. Elle prend en entrée un sommet de départ, un sommet cible, le graphe du labyrinthe, une fonction heuristique et la largeur du labyrinthe. Elle retourne un chemin du sommet de départ au sommet cible, ou une liste vide si aucun chemin n'est trouvé.
+
+_reconstruct_path: Fonction auxiliaire qui, à partir d'une table de routage (un dictionnaire indiquant le prédécesseur de chaque sommet), reconstruit le chemin du sommet de départ au sommet cible.
+
+4. Phases de Jeu:
+
+preprocessing: Comme pour les autres stratégies, cette fonction est exécutée une fois au début du jeu. Elle calcule le chemin vers le premier morceau de fromage en utilisant l'algorithme A* et stocke les actions associées dans la mémoire.
+
+turn: Appelée à chaque tour de jeu, cette fonction détermine le mouvement suivant de l'IA. Si la liste d'actions en mémoire est vide, elle choisit une action au hasard parmi les actions possibles. Sinon, elle prend la prochaine action de la liste.
+
+Critique et Remarques:
+
+Stratégie : L'approche A* est une amélioration par rapport aux stratégies basées uniquement sur Dijkstra car elle utilise une heuristique (distance de Manhattan dans ce cas) pour guider la recherche. Cela peut accélérer la recherche dans de nombreux cas, en particulier lorsque le fromage est loin.
+
+Optimisation : La mise en œuvre semble correcte, mais il pourrait être intéressant d'examiner si d'autres heuristiques, comme la distance euclidienne, pourraient offrir de meilleures performances. De plus, actuellement, l'IA ne calcule le chemin que pour le premier morceau de fromage. Dans une version future, l'IA pourrait recalculer son chemin chaque fois qu'elle atteint un morceau de fromage pour se diriger vers le morceau suivant le plus proche.
+
+Généralisation : Bien que la stratégie A* soit puissante, il serait bon d'envisager des situations où plusieurs morceaux de fromage sont présents, ou où d'autres joueurs peuvent bloquer des chemins ou prendre du fromage. Adapter la stratégie à ces scénarios dynamiques pourrait améliorer la performance.
+
+Conclusion:
+L'implémentation a_star.py est une tentative solide d'utiliser une recherche guidée heuristique pour naviguer dans le labyrinthe PyRat. Elle présente un bon équilibre entre optimisation et complexité. Toutefois, comme pour toutes les stratégies, il y a toujours des possibilités d'amélioration et d'adaptation à différents scénarios de jeu.

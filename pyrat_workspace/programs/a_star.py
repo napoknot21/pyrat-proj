@@ -109,7 +109,7 @@ def a_star ( start: int,
 
         # If we have reached the goal, reconstruct and return the path
         if current == target:
-            return _reconstruct_path(routing_table, start, target)
+            return _reconstruct_path(routing_table, start, target), g_score[current]
 
         open_set.remove(current)
         closed_set.add(current)
@@ -130,7 +130,7 @@ def a_star ( start: int,
                 open_set.add(neighbor)
                 open_queue.put((f_score[neighbor], neighbor))
     
-    return []
+    return [], float('inf')
 
 #####################################################################################################################################################
 
@@ -196,7 +196,7 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
     start_location = player_locations[name]
 
     # A* Path to cheese
-    path_to_cheese_a_star = a_star(start_location, cheese[0], maze, manhattan_distance, maze_width)
+    path_to_cheese_a_star, _ = a_star(start_location, cheese[0], maze, manhattan_distance, maze_width)
     actions_to_cheese_a_star = locations_to_actions(path_to_cheese_a_star, maze_width)
     
     # Store the actions to the cheese in memory

@@ -25,7 +25,8 @@ import random, heapq
 
 # Previously developed functions
 from tutorial import get_neighbors, locations_to_action
-from dijkstra import dijkstra, locations_to_actions, find_route, traversal
+from dijkstra import *
+from a_star import *
 
 #####################################################################################################################################################
 ############################################################### CONSTANTS & VARIABLES ###############################################################
@@ -37,54 +38,51 @@ from dijkstra import dijkstra, locations_to_actions, find_route, traversal
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
-def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-                 current_vertex: int,
-                 targets:        List[int]
-               ) ->              Tuple[List[float], Dict[int, Union[None, int]]]:
+def greedy ( graph: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
+             source :   int, 
+             vertices : List[int],
+             maze_width: int
+           ) -> int :
     """
-        Function that associates a score to each target.
-        In:
-            * graph:          Graph containing the vertices.
-            * current_vertex: Current location of the player in the maze.
-            
-        Out:
-            * scores:        Scores given to the targets.
-            * routing_table: Routing table obtained from the current vertex.
+    Determines the optimal vertex to target from a list of vertices based on A* search algorithm.
+    
+    This function computes the shortest path from a given source to all the vertices provided 
+    in the list using A* search algorithm and a Manhattan distance heuristic. It returns the 
+    optimal path and the associated target vertex.
+    
+    In:
+        * graph : A representation of the maze in which the shortest path is to be found. 
+        * source : The starting vertex from which the paths to the vertices are to be determined.
+        * vertices : A list of target vertices to which the shortest path from the source is to be determined.
+        * maze_width : Width of the maze in number of cells. Used for the Manhattan distance heuristic.
+    
+    Out:
+        * route : The optimal path from the source to the best target vertex 
+        * best_cheese : The optimal target vertex itself.
     """
 
-    # Call Dijkstra's algorithm to get distances and predecessors from the current vertex.
-    distances, routing_tables = dijkstra(current_vertex, graph)
-    
-    # Score for a target is its shortest distance from the current vertex.
-    scores = {target: distances[target] for target in targets}
-    
-    # Return the scores and the routing table.
-    return scores, routing_tables
+    # Initialisation des variables pour stocker la distance la plus courte et le fromage optimal
+    shortest_distance = float('inf')
+    best_cheese = None
+    route = None
 
-#####################################################################################################################################################
-def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-             initial_vertex: int,
-             vertices:       List[int]
-           ) ->              List[int]:
-    """
-        Greedy algorithm that goes to the score maximizer in a loop.
-        In:
-            * graph:          Graph containing the vertices.
-            * initial_vertex: Initial location of the player in the maze.
-            * vertices:       Vertices to visit with the greedy heuristic.
-        Out:
-            * route: Route to follow to perform the path through all vertices.
-    """
-    
-    scores, routing_table = give_score(graph,initial_vertex,vertices)
-    
-    next_vertex = min(scores, key=scores.get)
-    
-    route = find_route(routing_table, initial_vertex, next_vertex)
+    # Pour chaque fromage dans la liste des vertices
+    for cheese in vertices:
 
-    # Return the complete route.
-    return route, next_vertex
+        # Calculer le chemin et la distance du point de départ au fromage actuel en utilisant l'algorithme A*
+        player_path, distance = a_star(source, cheese, graph, manhattan_distance, maze_width)
+        
+        # Si la distance calculée est plus courte que la meilleure distance trouvée jusqu'à présent
+        if distance < shortest_distance:
 
+            # Mettre à jour la meilleure distance, le meilleur fromage, et le chemin optimal
+            shortest_distance = distance
+            best_cheese = cheese
+            route = player_path
+
+    # Retourner le chemin optimal et le fromage optimal
+    return route, best_cheese
+    
 #####################################################################################################################################################
 ##################################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ####################################################
 #####################################################################################################################################################
@@ -121,7 +119,7 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
 
     source = player_locations[name]
 
-    route, cheese_goal = greedy (maze, source, cheese)
+    route, cheese_goal = greedy (maze, source, cheese, maze_width)
     
     memory.route = route
     memory.goal = cheese_goal
@@ -171,7 +169,7 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
     
     else:
     
-        route_new, cheese_goal_new = greedy (maze, player_locations[name], cheese)
+        route_new, cheese_goal_new = greedy (maze, player_locations[name], cheese, maze_width)
         memory.route = route_new
         memory.goal = cheese_goal_new
         memory.actions = locations_to_actions(memory.route, maze_width)
@@ -229,9 +227,9 @@ if __name__ == "__main__":
     players = [{"name": "greedy 2", "preprocessing_function": preprocessing, "turn_function": turn}]
     
     # Customize the game elements
-    config = {"maze_width": 31,
-              "maze_height": 29,
-              "mud_percentage": 50.0,
+    config = {"maze_width": 15,
+              "maze_height": 11,
+              "mud_percentage": 40.0,
               "nb_cheese": 21,
               "trace_length": 1000}
     
