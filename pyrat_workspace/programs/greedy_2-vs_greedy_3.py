@@ -12,11 +12,17 @@
 from pyrat import *
 
 # External imports 
-# [TODO] Put all your standard imports (numpy, random, os, heapq...) here
+# Import PyRat
+from pyrat import *
+
+# External imports 
+import random, heapq
+
 # Previously developed functions
+from greedy_3 import *
 
 # [TODO] Put imports of functions you have developed in previous lessons here
-import random_3 as opponent
+import greedy_4 as opponent
 
 #################################################################################################################
 ############################################# CONSTANTS & VARIABLES #############################################
@@ -33,6 +39,7 @@ import random_3 as opponent
 #################################################################################################################
 ################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ##################################
 #################################################################################################################
+
 def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
                     maze_width:       int,
                     maze_height:      int,
@@ -62,7 +69,14 @@ def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, i
             * None.
     """
     # [TODO] Write your preprocessing code here
-    pass
+    source = player_locations[name]
+
+    route, cheese_goal = greedy (maze, source, cheese, maze_width)
+    
+    memory.route = route
+    memory.goal = cheese_goal
+    
+    memory.actions = locations_to_actions(memory.route, maze_width)
     
 #################################################################################################################
 ####################################### EXECUTED AT EACH TURN OF THE GAME #######################################
@@ -100,7 +114,18 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
             * action: One of the possible actions, as given in possible_actions.
     """
     # [TODO] Write your turn code here and do not forget to return a possible action
-    action = possible_actions[0]
+    if (memory.route != [] and memory.goal in cheese):
+        
+        action = memory.actions.pop(0)
+    
+    else:
+    
+        route_new, cheese_goal_new = greedy (maze, player_locations[name], cheese, maze_width)
+        memory.route = route_new
+        memory.goal = cheese_goal_new
+        memory.actions = locations_to_actions(memory.route, maze_width)
+        action = memory.actions.pop(0)
+
     return action
 
 #################################################################################################################
@@ -148,14 +173,18 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
 if __name__ == "__main__":
     
     # Map the functions to the character
-    players = [{"name": "Template 2", "team": "You", "skin": "rat", "preprocessing_function": preprocessing, "turn_function": turn, "postprocessing_function": postprocessing},
-               {"name": "Random 3", "team": "Opponent", "skin": "python", "preprocessing_function": opponent.preprocessing if "preprocessing" in dir(opponent) else None, "turn_function": opponent.turn, "postprocessing_function": opponent.postprocessing if "postprocessing" in dir(opponent) else None}]
+    players = [{"name": "Greedy 3", "team": "You", "skin": "rat", "preprocessing_function": preprocessing, "turn_function": turn, "postprocessing_function": postprocessing},
+               {"name": "Greedy 4", "team": "Opponent", "skin": "python", "preprocessing_function": opponent.preprocessing if "preprocessing" in dir(opponent) else None, "turn_function": opponent.turn, "postprocessing_function": opponent.postprocessing if "postprocessing" in dir(opponent) else None}]
     
     # Customize the game elements
-    config = {"maze_width": 15,
-              "maze_height": 11,
-              "mud_percentage": 0.0,
-              "nb_cheese": 21
+    config = {"maze_width": 31,
+              "maze_height": 29,
+              "cell_percentage": 80.0,
+              "wall_percentage": 60.0,
+              "mud_percentage": 20.0,
+              "mud_range": [4,9],
+              "nb_cheese": 41,
+              "turn_time": 0.1
              }
     
     # Start the game
