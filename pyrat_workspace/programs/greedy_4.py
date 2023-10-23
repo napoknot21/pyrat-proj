@@ -38,6 +38,41 @@ from a_star import *
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
+def cheese_density(maze: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
+                   cheese_location: int, 
+                   cheeses: List[int], 
+                   maze_width: int, 
+                   D: int) -> int:
+    """
+    Computes the sum of distances from a given cheese to the D closest cheeses.
+    
+    In:
+        * maze:             Map of the maze.
+        * cheese_location:  Location of the cheese to evaluate.
+        * cheeses:          List of all available pieces of cheese in the maze.
+        * maze_width:       Width of the maze in number of cells.
+        * D:                Number of closest cheeses to consider.
+        
+    Out:
+        * density_score:    Sum of distances to the D closest cheeses.
+    """
+    
+    distances = {}
+    
+    for other_cheese in cheeses:
+
+        if other_cheese != cheese_location:
+        
+            _, distance = a_star(cheese_location, other_cheese, maze, manhattan_distance, maze_width)
+        
+            if distance <= D :
+        
+                distances[other_cheese] = distance
+    
+    return sum(distances.values())
+
+#####################################################################################################################################################
+
 def greedy ( graph: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
              source :   int, 
              vertices : List[int],
@@ -62,25 +97,26 @@ def greedy ( graph: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
     """
 
     # Initialisation des variables pour stocker la distance la plus courte et le fromage optimal
-    shortest_distance = float('inf')
+    
+    best_score = float('inf')
     best_cheese = None
     route = None
 
     # Pour chaque fromage dans la liste des vertices
     for cheese in vertices:
 
-        # Calculer le chemin et la distance du point de départ au fromage actuel en utilisant l'algorithme A*
-        player_path, distance = a_star(source, cheese, graph, manhattan_distance, maze_width)
-        
-        # Si la distance calculée est plus courte que la meilleure distance trouvée jusqu'à présent
-        if distance < shortest_distance:
+        density = cheese_density(graph, cheese, vertices, maze_width, D=5)  
+        player_path, distance_to_cheese = a_star(source, cheese, graph, manhattan_distance, maze_width)
 
-            # Mettre à jour la meilleure distance, le meilleur fromage, et le chemin optimal
-            shortest_distance = distance
+        # Combine distance and density into a single score
+        score = distance_to_cheese * density
+
+        if score < best_score:
+            
+            best_score = score
             best_cheese = cheese
             route = player_path
 
-    # Retourner le chemin optimal et le fromage optimal
     return route, best_cheese
 
 #####################################################################################################################################################
@@ -224,7 +260,7 @@ def postprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, 
 if __name__ == "__main__":
 
     # Map the functions to the character
-    players = [{"name": "greedy 3", "preprocessing_function": preprocessing, "turn_function": turn}]
+    players = [{"name": "greedy 2", "preprocessing_function": preprocessing, "turn_function": turn}]
     
     # Customize the game elements
     config = {"maze_width": 15,

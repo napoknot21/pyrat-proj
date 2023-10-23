@@ -29,11 +29,49 @@ import random_3 as opponent
 ################################################### FUNCTIONS ###################################################
 #################################################################################################################
 
-# [TODO] It is good practice to keep all developed functions in an easily identifiable section
+def minimax(maze, player_location, opponent_location, cheese, depth, maximizing_player):
+    if depth == 0 or len(cheese) == 0:
+        return evaluate_position(player_location, opponent_location, cheese)
+
+    if maximizing_player:
+        max_eval = float('-inf')
+        for action in MOVES.keys():
+            new_location = move_from_direction(player_location, action, maze)
+            eval = minimax(maze, new_location, opponent_location, cheese, depth-1, False)
+            max_eval = max(max_eval, eval)
+        return max_eval
+    else:
+        min_eval = float('inf')
+        for action in MOVES.keys():
+            new_location = move_from_direction(opponent_location, action, maze)
+            eval = minimax(maze, player_location, new_location, cheese, depth-1, True)
+            min_eval = min(min_eval, eval)
+        return min_eval
+
+#################################################################################################################
+
+def evaluate_position(player_location, opponent_location, cheese):
+    # [TODO] Define this function. For simplicity, it can just return the distance 
+    # from the player to the nearest piece of cheese minus the distance from the opponent to the same piece of cheese.
+    pass
+
+#################################################################################################################
+
+def best_move(maze, player_location, opponent_location, cheese):
+    best_score = float('-inf')
+    best_action = None
+    for action in MOVES.keys():
+        new_location = move_from_direction(player_location, action, maze)
+        score = minimax(maze, new_location, opponent_location, cheese, MAX_DEPTH, False)
+        if score > best_score:
+            best_score = score
+            best_action = action
+    return best_action
 
 #################################################################################################################
 ################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ##################################
 #################################################################################################################
+
 def preprocessing ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
                     maze_width:       int,
                     maze_height:      int,
