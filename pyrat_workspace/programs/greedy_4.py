@@ -38,6 +38,17 @@ from a_star import *
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
+def nearby_cheese(current_position, cheeses, max_distance=5):
+    """
+    Returns the nearest cheese if it's within the max_distance.
+    """
+    nearby = [cheese for cheese in cheeses if abs(current_position - cheese) <= max_distance]
+    
+    if nearby:
+        return min(nearby, key=lambda cheese: abs(current_position - cheese))
+    return None
+
+
 def cheese_density(maze: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
                    cheese_location: int, 
                    cheeses: List[int], 
@@ -57,27 +68,25 @@ def cheese_density(maze: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         * density_score:    Sum of distances to the D closest cheeses.
     """
     
-    distances = {}
-    
-    for other_cheese in cheeses:
+    distances = []
 
-        if other_cheese != cheese_location:
-        
-            _, distance = a_star(cheese_location, other_cheese, maze, manhattan_distance, maze_width)
-        
-            if distance <= D :
-        
-                distances[other_cheese] = distance
-    
-    return sum(distances.values())
+    for fromage in cheeses:
+        if fromage != cheese_location:
+            distance = manhattan_distance(cheese_location, fromage, maze_width)
+            if distance <= D:
+                distances.append(distance)
+                
+    densite = sum(1 / (distance + 1) for distance in distances)
+    return densite
 
 #####################################################################################################################################################
 
 def greedy ( graph: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
              source :   int, 
              vertices : List[int],
-             maze_width: int
-           ) -> int :
+             maze_width: int,
+             lambda_coefficient: float = 0.5
+           ) ->  int :
     """
     Determines the optimal vertex to target from a list of vertices based on A* search algorithm.
     
@@ -102,17 +111,14 @@ def greedy ( graph: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
     best_cheese = None
     route = None
 
-    # Pour chaque fromage dans la liste des vertices
     for cheese in vertices:
-
         density = cheese_density(graph, cheese, vertices, maze_width, D=5)  
         player_path, distance_to_cheese = a_star(source, cheese, graph, manhattan_distance, maze_width)
 
         # Combine distance and density into a single score
-        score = distance_to_cheese * density
+        score = distance_to_cheese + lambda_coefficient * (1 - density)
 
         if score < best_score:
-            
             best_score = score
             best_cheese = cheese
             route = player_path
@@ -212,6 +218,8 @@ def turn ( maze:             Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         action = memory.actions.pop(0)
 
     return action
+    
+   
 
 #####################################################################################################################################################
 ######################################################## EXECUTED ONCE AT THE END OF THE GAME #######################################################

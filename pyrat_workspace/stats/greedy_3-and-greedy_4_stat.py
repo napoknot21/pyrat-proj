@@ -44,12 +44,12 @@ NB_GAMES = 500
     Games configuration.
 """
 
-MAZE_WIDTH = 15
-MAZE_HEIGHT = 10
-MUD_PERCENTAGE = 10.0
+MAZE_WIDTH = 31
+MAZE_HEIGHT = 29
+MUD_PERCENTAGE = 20.0
 WALL_PERCENTAGE = 40.0
-MUD_RANGE = [2, 10]
-NB_CHEESE = 1
+MUD_RANGE = [4, 9]
+NB_CHEESE = 41
 
 #####################################################################################################################################################
 
@@ -87,8 +87,8 @@ def run_one_game ( seed:    int,
               "wall_percentage": WALL_PERCENTAGE,
               "nb_cheese": NB_CHEESE,
               "render_mode": "no_rendering",
-              "preprocessing_time": 0.0,
-              "turn_time": 0.0,
+              "preprocessing_time": 3.0,
+              "turn_time": 0.1,
               "synchronous": True,
               "random_seed": seed}
         
