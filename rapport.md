@@ -1,3 +1,9 @@
+# PyRat
+
+## Authors
+MARTIN AVILA Charly
+LAARECH, Yasmine
+
 ## Introduction
 
 Le projet PyRat (Python Rat) a été mené et développé dans le cadre du cours d'Algorithmes et mathématiques discrètes à l'IMT Atlantique.
