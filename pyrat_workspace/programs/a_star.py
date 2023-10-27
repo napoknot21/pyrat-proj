@@ -54,9 +54,15 @@ def manhattan_distance ( vertex1: int,
         Out:
             * The Manhattan distance between the two vertices.
     """
+    # Convert vertex1 to its x and y coordinates
     x1, y1 = vertex1 % maze_width, vertex1 // maze_width
+    
+    # Convert vertex2 to its x and y coordinates
     x2, y2 = vertex2 % maze_width, vertex2 // maze_width
+    
+    # Calculate the Manhattan distance
     res = abs(x1 - x2) + abs(y1 - y2)
+    
     return res
 
 #####################################################################################################################################################
@@ -81,9 +87,13 @@ def a_star ( start: int,
         Out:
             * List of vertices representing the path from start to target. If no path is found, returns an empty list.
     """
-    closed_set = set() # The set of nodes already evaluated
-    open_set = set([start]) # The set of discovered nodes that are not evaluated yet.
+    # Nodes that have already been analyzed and have a path from the start to them
+    closed_set = set() 
 
+    # Nodes that are yet to be analyzed but have a known path from the start node
+    open_set = set([start]) 
+
+    # A dictionary that maps each node to its predecessor. This is used to reconstruct the path at the end.
     routing_table = {}
 
     # For each node, the cost of getting from the start node to that node.
@@ -124,12 +134,22 @@ def a_star ( start: int,
 
             if tentative_g_score < g_score[neighbor]:
 
+                # Mise à jour de la table de routage pour indiquer que le chemin actuel vers 'neighbor' passe par le nœud 'current'.
                 routing_table[neighbor] = current
+
+                # Mise à jour du coût du chemin le plus court connu pour se rendre de 'start' à 'neighbor'.
                 g_score[neighbor] = tentative_g_score
+
+                # Mise à jour de l'estimation du coût total pour se rendre du nœud de départ au nœud cible
                 f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, target, maze_width)
+
+                # Ajout du nœud 'neighbor' à l'ensemble des nœuds à évaluer.
                 open_set.add(neighbor)
+
+                # Ajout du nœud 'neighbor' à la file de priorité avec son 'f_score' comme priorité.
                 open_queue.put((f_score[neighbor], neighbor))
     
+    # If we reach here, there is no path from start to target
     return [], float('inf')
 
 #####################################################################################################################################################
@@ -149,14 +169,24 @@ def _reconstruct_path ( routing_table ,
     Out:
         * path: A list representing the path from start to goal.
     """
+    # Start with the target node (end point of the desired path)
     current = target
+
+    # Initialize the path with just the target node for now
     path = [current]
 
+    # Loop back through the path using the routing table (came_from dictionary)
+    # until we reach the start node
     while current != start:
-    
+        
+        # Update the current node to its predecessor in the path
         current = routing_table[current]
+
+        # Insert the current node at the beginning of the path
+        # This is because we're reconstructing the path from end to start
         path.insert(0, current)
     
+    # Return the reconstructed path
     return path
 
 

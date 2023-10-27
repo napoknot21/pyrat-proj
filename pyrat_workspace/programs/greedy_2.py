@@ -62,6 +62,7 @@ def give_score ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]]
     return scores, routing_tables
 
 #####################################################################################################################################################
+
 def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
              initial_vertex: int,
              vertices:       List[int]
@@ -75,15 +76,25 @@ def greedy ( graph:          Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         Out:
             * route: Route to follow to perform the path through all vertices.
     """
-    
-    scores, routing_table = give_score(graph,initial_vertex,vertices)
-    
-    next_vertex = min(scores, key=scores.get)
-    
-    route = find_route(routing_table, initial_vertex, next_vertex)
+    # Start with the target node (end point of the desired path)
+    current = target
 
-    # Return the complete route.
-    return route, next_vertex
+    # Initialize the path with just the target node for now
+    path = [current]
+
+    # Loop back through the path using the routing table (came_from dictionary)
+    # until we reach the start node
+    while current != start:
+        
+        # Update the current node to its predecessor in the path
+        current = routing_table[current]
+
+        # Insert the current node at the beginning of the path
+        # This is because we're reconstructing the path from end to start
+        path.insert(0, current)
+    
+    # Return the reconstructed path
+    return path
 
 #####################################################################################################################################################
 ##################################################### EXECUTED ONCE AT THE BEGINNING OF THE GAME ####################################################

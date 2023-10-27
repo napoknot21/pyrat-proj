@@ -19,7 +19,7 @@
 
 # Import PyRat
 from pyrat import *
-
+from typing import Optional
 # External imports 
 import random, heapq
 
@@ -38,22 +38,44 @@ from a_star import *
 ##################################################################### FUNCTIONS #####################################################################
 #####################################################################################################################################################
 
-def nearby_cheese(current_position, cheeses, max_distance=5):
+def nearby_cheese ( current_position: int,
+                    cheeses: List[int],
+                    max_distance: float = 5
+                  ) -> Optional[int] :
     """
     Returns the nearest cheese if it's within the max_distance.
+
+    In:
+        * current_position:     Current position.
+        * cheeses:              Location of the cheese to evaluate.
+        * max_distance:         Maximal distance for searching.
+        
+    Out:
+        * minimal_cheese:       The nearest cheese in a radius of 5 (or max_distance).
     """
+    
+    # Create a list comprehension to filter cheeses that are within the max_distance from the current position.
     nearby = [cheese for cheese in cheeses if abs(current_position - cheese) <= max_distance]
     
+    # If there's at least one cheese that meets the criteria:
     if nearby:
-        return min(nearby, key=lambda cheese: abs(current_position - cheese))
+
+        # Determine the closest cheese by minimizing the absolute difference from the current position.
+        minimal_cheese = min(nearby, key=lambda cheese: abs(current_position - cheese))
+        
+        # Return the closest cheese.
+        return minimal_cheese
+    
+    # If no cheeses are found within the max_distance, return None.
     return None
 
+#####################################################################################################################################################
 
 def cheese_density(maze: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
-                   cheese_location: int, 
-                   cheeses: List[int], 
-                   maze_width: int, 
-                   D: int) -> int:
+                           cheese_location: int, 
+                           cheeses: List[int], 
+                           maze_width: int, 
+                           D: int) -> float:
     """
     Computes the sum of distances from a given cheese to the D closest cheeses.
     
@@ -68,15 +90,26 @@ def cheese_density(maze: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         * density_score:    Sum of distances to the D closest cheeses.
     """
     
+    # List to store distances from the cheese_location to other pieces of cheese
     distances = []
 
+    # Loop through each piece of cheese
     for fromage in cheeses:
+        
+        # We don't want to measure the distance from the cheese to itself
         if fromage != cheese_location:
+            
+            # Calculate the Manhattan distance from cheese_location to the current 'fromage'
             distance = manhattan_distance(cheese_location, fromage, maze_width)
+            
+            # If the calculated distance is within the limit (D), add it to the distances list
             if distance <= D:
                 distances.append(distance)
-                
+    
+    # Compute the "density score": sum of the inverses of the distances, incremented by 1
+    # This gives a higher value for closer cheeses, representing higher "density"
     densite = sum(1 / (distance + 1) for distance in distances)
+    
     return densite
 
 #####################################################################################################################################################
@@ -99,30 +132,38 @@ def greedy ( graph: Union[numpy.ndarray, Dict[int, Dict[int, int]]],
         * source : The starting vertex from which the paths to the vertices are to be determined.
         * vertices : A list of target vertices to which the shortest path from the source is to be determined.
         * maze_width : Width of the maze in number of cells. Used for the Manhattan distance heuristic.
+        * lambda_coefficient : A weight parameter to balance the influence of cheese density in the score calculation.
     
     Out:
         * route : The optimal path from the source to the best target vertex 
         * best_cheese : The optimal target vertex itself.
     """
-
-    # Initialisation des variables pour stocker la distance la plus courte et le fromage optimal
     
+    # Initialize variables to store the shortest distance found and the corresponding optimal cheese vertex
     best_score = float('inf')
     best_cheese = None
     route = None
 
+    # Iterate over each cheese in the list of vertices
     for cheese in vertices:
-        density = cheese_density(graph, cheese, vertices, maze_width, D=5)  
+        
+        # Compute the density score of the cheese, representing its proximity to other cheeses
+        density = cheese_density(graph, cheese, vertices, maze_width, D=5)
+        
+        # Calculate the shortest path from the source to the current cheese using A* algorithm
         player_path, distance_to_cheese = a_star(source, cheese, graph, manhattan_distance, maze_width)
 
-        # Combine distance and density into a single score
+        # Combine the calculated distance and density score into a single evaluation score
+        # A lower score is better, indicating a closer and denser cheese
         score = distance_to_cheese + lambda_coefficient * (1 - density)
 
+        # Update the best score, cheese, and route if the current cheese provides a better score
         if score < best_score:
             best_score = score
             best_cheese = cheese
             route = player_path
 
+    # Return the optimal path and the best cheese vertex
     return route, best_cheese
 
 #####################################################################################################################################################
