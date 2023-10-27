@@ -2,6 +2,8 @@
 
 Course of algorithmics and graph theory, structured around a maze game, in which you program a character (a rat or a python) to go grab pieces of cheese faster than an opponent. This course is intended for the 1st year students of IMT Atlantique.
 
+made by MARTIN AVILA Charly and LAARECH Yasmine
+
 
 ## Prerequisites
 Ensure you have ```git``` and the lastest version of ```Python3```. If you haven't, you can download git [here](https://git-scm.com/downloads).
